@@ -1,0 +1,290 @@
+<!doctype html>
+<html lang="nl">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#100d1b">
+  <meta name="description" content="Mijn Budget: eenvoudig inkomsten, vaste lasten en uitgaven bijhouden per maand.">
+  <title>Mijn Budget — jouw overzicht</title>
+  <style>
+    :root { color-scheme:dark; --bg:#100d1b; --panel:#201a30; --panel2:#29213c; --border:#403351; --text:#f8f5ff; --muted:#b5aac9; --purple:#b17aff; --purple2:#8e58ea; --green:#74e2a8; --red:#ff9aa8; }
+    * { box-sizing:border-box }
+    body { margin:0; background:radial-gradient(ellipse 110% 45% at 50% -6%,#35204f 0%,#100d1b 80%); color:var(--text); font:15px/1.45 system-ui,-apple-system,"Segoe UI",sans-serif; }
+    button,input,select { font:inherit }
+    button { cursor:pointer; -webkit-tap-highlight-color:transparent }
+    button:focus-visible,input:focus-visible,select:focus-visible { outline:2px solid var(--purple);outline-offset:3px }
+    main { max-width:500px; margin:auto; padding:20px 16px 115px; min-height:100dvh }
+    .top { display:flex;align-items:center;justify-content:space-between; gap:10px;margin-bottom:21px }
+    .logo { font-weight:850;letter-spacing:-.7px;font-size:23px;white-space:nowrap }
+    .logo b { color:var(--purple) }
+    .settings { border:1px solid var(--border);background:var(--panel);color:var(--text);border-radius:12px;width:42px;height:42px;font-size:21px }
+    .topright { display:flex;gap:9px;align-items:center }
+    .monthwrap { padding:14px;background:linear-gradient(150deg,#261c3a,#1a1628);border:1px solid var(--border);border-radius:18px; margin-bottom:24px }
+    .monthcap { text-transform:uppercase;font-size:10px;letter-spacing:1.5px;font-weight:750;color:var(--muted);text-align:center;margin-bottom:5px }
+    .month { display:flex;justify-content:space-between;gap:6px;align-items:center }
+    .month button { background:#352849;border:1px solid #56436d;color:#fff;width:44px;height:42px;border-radius:12px;font-size:27px;line-height:1 }
+    .month strong { text-align:center;font-size:17px;text-transform:capitalize;letter-spacing:.1px }
+    .now { display:block;margin:8px auto 0;padding:4px 12px;border:0;background:transparent;color:#d3b6ff;font-size:12px;text-decoration:underline;text-underline-offset:3px }
+    .now.hidden { display:none }
+    h1 { font-size:28px;letter-spacing:-.7px;margin:0 0 3px }
+    h2 { font-size:17px;margin:24px 0 11px;letter-spacing:-.2px }
+    .hint { color:var(--muted);font-size:13px;margin:0 0 18px }
+    .card { background:linear-gradient(148deg,#28203b,#1b1729);border:1px solid var(--border);padding:17px;border-radius:18px;margin-bottom:11px }
+    .hero { background:linear-gradient(120deg,#44266b 0%,#302049 65%,#241b37 100%);border-color:#7149a8 }
+    .kicker { font-size:13px;color:#ded5ed }
+    .big { margin:5px 0;font-size:36px;font-weight:850;letter-spacing:-1.4px;font-variant-numeric:tabular-nums }
+    .violet { color:#d0aaff }.green { color:var(--green) }.negative { color:var(--red) }
+    .meta { font-size:12px;color:var(--muted) }
+    .stats { display:grid;grid-template-columns:1fr 1fr;gap:10px }
+    .stats .card { padding:14px }
+    .stats .number { font-weight:800;font-size:20px;letter-spacing:-.5px;margin-top:6px;overflow-wrap:anywhere }
+    .progress { height:9px;border-radius:99px;background:#58436e;overflow:hidden;margin-top:16px }
+    .progress>span { display:block;height:100%;border-radius:99px;background:linear-gradient(90deg,#ab6ef3,#d3a8ff) }
+    .line { display:flex;justify-content:space-between;align-items:center;gap:10px;background:#201a2e;border:1px solid var(--border);border-radius:14px;padding:13px;margin:8px 0 }
+    .line .lineleft { min-width:0;overflow-wrap:anywhere }
+    .line .lineright { display:flex;align-items:center;gap:8px;flex-shrink:0 }
+    .amount { font-weight:800;white-space:nowrap;font-variant-numeric:tabular-nums }
+    .edit { border:1px solid #544267;border-radius:10px;background:#322643;color:#debfff;min-width:38px;height:36px;font-size:18px }
+    .add { width:100%;border:1px dashed #8660b4;background:#2a1f3a;color:#e4cfff;border-radius:14px;padding:14px;margin-top:12px;font-weight:750 }
+    .primary { background:linear-gradient(90deg,#8650e0,#a773f2);border:0;color:white;border-radius:12px;padding:13px 16px;font-weight:800 }
+    .secondary { border:1px solid var(--border);background:#322743;color:#f5eaff;border-radius:12px;padding:13px 16px;font-weight:700 }
+    .nav { position:fixed;inset:auto 0 0;background:#16111ff2;border-top:1px solid #453354;padding:9px 8px max(11px,env(safe-area-inset-bottom));backdrop-filter:blur(14px);z-index:2 }
+    .navin { max-width:500px;margin:auto;display:flex;justify-content:space-around }
+    .nav button { background:none;color:#aaa0b8;border:0;display:flex;flex-direction:column;align-items:center;gap:3px;min-width:65px;padding:5px 3px;font-size:11px }
+    .nav button.active { color:#cea8ff;font-weight:800 }
+    .nav .navicon { font-size:22px;line-height:1.2 }
+    .empty { color:var(--muted);font-size:13px;border:1px dashed var(--border);border-radius:12px;padding:15px }
+    .tip { font-size:12px;line-height:1.6;color:#c7bdd6;background:#251d35;border:1px solid #49365e;border-radius:13px;padding:11px 12px;margin:13px 0 }
+    .buttons { display:flex;gap:10px;margin-top:16px }.buttons>*{flex:1}
+    .sheet { position:fixed;inset:0;background:#06020dcc;z-index:5;display:flex;align-items:flex-end;justify-content:center }
+    .dialog { width:min(100%,500px);max-height:94dvh;overflow:auto;background:#21192f;border:1px solid #604773;border-radius:22px 22px 0 0;padding:20px 19px calc(20px + env(safe-area-inset-bottom));box-shadow:0 0 50px #0009 }
+    .dialog h2 { margin:0 0 3px;font-size:23px }.dialog .subtitle{margin:0 0 13px;color:#bdaecb;font-size:13px}
+    .field { display:block;margin:14px 0;color:#dfd3ed;font-size:13px;font-weight:650 }
+    .field input,.field select { display:block;width:100%;background:#141020;color:white;border:1px solid #6b547f;border-radius:11px;padding:12px;margin-top:6px }
+    .choice { display:flex;gap:8px;margin-top:8px }
+    .choice label { display:block;flex:1;background:#161020;border:1px solid #503a66;border-radius:11px;padding:11px;font-size:12px;font-weight:600 }
+    .choice label:has(input:checked){background:#412660;border-color:#a56aef}
+    .choice input { width:auto;display:inline;margin:0 5px 0 0;vertical-align:middle;accent-color:var(--purple) }
+    .danger { border:0;background:transparent;color:#ffafba;padding:13px 5px 0;text-align:left;font-size:13px }
+    .hidden { display:none!important }
+    .notice { margin-top:22px;text-align:center;font-size:11px;color:#8f85a2 }
+    .settingsRow { display:block;width:100%;margin:9px 0;text-align:left }
+    @media(min-width:700px) { main { padding-top:30px } .sheet { align-items:center }.dialog { border-radius:22px;max-height:90dvh } }
+    @media(max-width:365px){.logo{font-size:20px}.nav button{min-width:54px}.big{font-size:31px}.stats .number{font-size:18px}}
+  </style>
+</head>
+<body>
+  <main>
+    <header class="top">
+      <div class="logo">◈ Mijn <b>Budget</b></div>
+      <div class="topright"><button class="settings" id="settingsOpen" aria-label="Instellingen en back-up">⚙</button></div>
+    </header>
+    <section class="monthwrap" aria-label="Maand kiezen">
+      <div class="monthcap">Geselecteerde maand</div>
+      <div class="month">
+        <button id="previousMonth" aria-label="Vorige maand">‹</button>
+        <strong id="monthLabel"></strong>
+        <button id="nextMonth" aria-label="Volgende maand">›</button>
+      </div>
+      <button class="now hidden" id="goNow">Terug naar deze maand</button>
+    </section>
+    <div id="view"></div>
+    <div class="notice">Jouw gegevens blijven op dit apparaat. Maak af en toe een back-up via ⚙.</div>
+  </main>
+  <nav class="nav" aria-label="Hoofdnavigatie"><div class="navin">
+    <button data-tab="overview" class="active"><span class="navicon">⌂</span>Overzicht</button>
+    <button data-tab="income"><span class="navicon">▣</span>Inkomsten</button>
+    <button data-tab="bills"><span class="navicon">▤</span>Vaste lasten</button>
+    <button data-tab="expenses"><span class="navicon">◷</span>Uitgaven</button>
+  </div></nav>
+  <div class="sheet hidden" id="sheet" role="dialog" aria-modal="true" aria-labelledby="formTitle">
+    <form class="dialog" id="entryForm">
+      <h2 id="formTitle"></h2><p class="subtitle" id="formMonth"></p>
+      <label class="field">Omschrijving<input id="entryName" required maxlength="70" placeholder="Bijv. salaris, huur, boodschappen"></label>
+      <label class="field">Bedrag in euro's<input id="entryAmount" required type="number" min="0" max="100000000" step="0.01" inputmode="decimal" placeholder="0,00"></label>
+      <label class="field hidden" id="dateField">Datum<input id="entryDate" type="date"></label>
+      <label class="field" id="repeatField">Herhaling<select id="entryRepeat"><option value="monthly">Iedere maand</option><option value="once">Alleen deze maand</option></select></label>
+      <div class="field hidden" id="scopeField">Voor welke maanden wil je de wijziging opslaan?
+        <div class="choice">
+          <label><input type="radio" name="editScope" value="only" checked>Alleen deze maand</label>
+          <label><input type="radio" name="editScope" value="future">Vanaf deze maand</label>
+        </div>
+      </div>
+      <div class="buttons"><button class="secondary" type="button" id="cancelEntry">Annuleren</button><button class="primary" type="submit">Opslaan</button></div>
+      <button class="danger hidden" type="button" id="removeEntry">Verwijderen / stopzetten</button>
+    </form>
+  </div>
+  <div class="sheet hidden" id="settingsSheet" role="dialog" aria-modal="true" aria-labelledby="settingsTitle">
+    <section class="dialog">
+      <h2 id="settingsTitle">Instellingen en back-up</h2>
+      <p class="subtitle">Bewaar je gegevens als bestand voor de zekerheid.</p>
+      <button class="secondary settingsRow" type="button" id="downloadBackup">↓ Back-up downloaden</button>
+      <button class="secondary settingsRow" type="button" id="restoreBackup">↑ Back-up herstellen</button>
+      <input id="backupFile" class="hidden" type="file" accept=".json,application/json">
+      <p class="tip">Je hoeft geen account aan te maken. De gegevens worden alleen opgeslagen in deze browser. Een back-up herstellen vervangt de gegevens in deze browser.</p>
+      <button class="primary" type="button" id="closeSettings" style="width:100%">Sluiten</button>
+    </section>
+  </div>
+  <script>
+    'use strict';
+    // Zelfde opslagsleutel als versie 1: bestaande bedragen blijven staan na een GitHub-update.
+    const STORAGE_KEY='mijn-budget-v1';
+    const $=id=>document.getElementById(id);
+    const html=s=>String(s??'').replaceAll('&','&amp;').replaceAll('<','&lt;').replaceAll('>','&gt;').replaceAll('"','&quot;').replaceAll("'",'&#39;');
+    const euro=n=>new Intl.NumberFormat('nl-NL',{style:'currency',currency:'EUR'}).format(Number(n)||0);
+    const yearMonth=d=>`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}`;
+    const currentMonth=()=>yearMonth(new Date());
+    const dateLocal=d=>`${yearMonth(d)}-${String(d.getDate()).padStart(2,'0')}`;
+    const getLabel=k=>new Date(Number(k.slice(0,4)),Number(k.slice(5,7))-1,1).toLocaleDateString('nl-NL',{month:'long',year:'numeric'});
+    const getId=()=>globalThis.crypto&&crypto.randomUUID?crypto.randomUUID():`id-${Date.now()}-${Math.random().toString(36).slice(2)}`;
+    let data={items:[]};
+    try { const old=JSON.parse(localStorage.getItem(STORAGE_KEY));if(old&&Array.isArray(old.items))data=old; } catch(error) { console.warn('Opslag kon niet worden geladen',error); }
+    let cursor=new Date(),tab='overview',editingId=null,editingType=null;cursor.setDate(1);
+    const selectedMonth=()=>yearMonth(cursor);
+    function persist(){try{localStorage.setItem(STORAGE_KEY,JSON.stringify(data));return true}catch(e){alert('Opslaan is niet gelukt. Controleer of je browser opslag toestaat.');return false}}
+    // 'overrides' uit versie 1 blijft werken; nieuwe blijvende wijzigingen gebruiken 'amountChanges'.
+    function included(item,k){
+      if(item.deletedFrom&&k>=item.deletedFrom)return false;
+      if(item.repeat==='once')return item.month===k;
+      return k>=item.month&&!(item.skipMonths||[]).includes(k);
+    }
+    function valueAt(item,k,field){
+      let value=item[field];
+      const changes=item[field+'Changes']||{};
+      Object.keys(changes).filter(m=>m<=k).sort().forEach(m=>{value=changes[m]});
+      const single=field==='amount'?(item.overrides||{}):(item.nameOverrides||{});
+      if(Object.prototype.hasOwnProperty.call(single,k))value=single[k];
+      return value;
+    }
+    function monthItems(type){const k=selectedMonth();return data.items.filter(i=>i.type===type&&included(i,k)).map(i=>({...i,shownName:valueAt(i,k,'name'),shownAmount:Number(valueAt(i,k,'amount'))||0}));}
+    function total(type){return monthItems(type).reduce((sum,i)=>sum+i.shownAmount,0)}
+    function line(item){
+      let note=item.repeat==='monthly'?'Maandelijks':'Eenmalig';
+      if(item.type==='expenses'&&item.date)note+=' · '+html(item.date);
+      const tailored=(item.overrides&&Object.prototype.hasOwnProperty.call(item.overrides,selectedMonth()))||(item.nameOverrides&&Object.prototype.hasOwnProperty.call(item.nameOverrides,selectedMonth()));
+      if(tailored)note+=' · Deze maand aangepast';
+      return `<div class="line"><div class="lineleft"><strong>${html(item.shownName)}</strong><div class="meta">${note}</div></div><div class="lineright"><span class="amount">${euro(item.shownAmount)}</span><button class="edit" data-edit="${html(item.id)}" aria-label="Bewerk ${html(item.shownName)}">✎</button></div></div>`;
+    }
+    function render(){
+      const k=selectedMonth(),income=total('income'),bills=total('bills'),expenses=total('expenses'),remaining=income-bills-expenses;
+      $('monthLabel').textContent=getLabel(k);
+      $('goNow').classList.toggle('hidden',k===currentMonth());
+      document.querySelectorAll('.nav button').forEach(b=>b.classList.toggle('active',b.dataset.tab===tab));
+      let markup='';
+      if(tab==='overview'){
+        const ratio=income>0?Math.max(0,Math.min(100,(bills+expenses)/income*100)):0;
+        markup=`<h1>Overzicht</h1><p class="hint">Jouw geldzaken in ${getLabel(k)}</p>
+          <div class="card hero"><div class="kicker">Nog beschikbaar deze maand</div><div class="big ${remaining<0?'negative':'violet'}">${euro(remaining)}</div><div class="meta">Inkomsten min vaste lasten en uitgaven</div><div class="progress" aria-label="Deel van je inkomen uitgegeven"><span style="width:${ratio}%"></span></div></div>
+          <div class="stats"><div class="card"><div class="kicker">Inkomsten</div><div class="number green">${euro(income)}</div></div><div class="card"><div class="kicker">Vaste lasten</div><div class="number">${euro(bills)}</div></div></div>
+          <div class="card"><div class="kicker">Overige uitgaven</div><div class="number">${euro(expenses)}</div></div>
+          <h2>Snel toevoegen</h2><div class="buttons"><button class="primary" data-add="income">+ Inkomsten</button><button class="primary" data-add="expenses">+ Uitgave</button></div>
+          <div class="tip">Met de pijltjes bovenaan ga je naar een andere maand. Elke maand kun je andere bedragen invullen, zonder eerdere maanden te veranderen.</div>`;
+      } else {
+        const titles={income:['Inkomsten','Vul je salaris en eventuele extra inkomsten in.','inkomst'],bills:['Vaste lasten','Huur, verzekeringen en andere terugkerende kosten.','vaste last'],expenses:['Uitgaven','Wat heb je deze maand uitgegeven?','uitgave']};
+        const [heading,hint,name]=titles[tab];
+        markup=`<h1>${heading}</h1><p class="hint">${hint}</p><div class="card hero"><div class="kicker">Totaal ${getLabel(k)}</div><div class="big violet">${euro(total(tab))}</div></div>
+          ${monthItems(tab).map(line).join('')||'<p class="empty">Voor deze maand staat er nog niets.</p>'}
+          <button class="add" data-add="${tab}">＋ ${name[0].toUpperCase()+name.slice(1)} toevoegen</button>
+          ${tab==='income'||tab==='bills'?'<div class="tip">Tik op ✎ om een bedrag te wijzigen. Kies daarna of de wijziging alleen voor deze maand geldt, of ook voor volgende maanden.</div>':''}`;
+      }
+      $('view').innerHTML=markup;
+    }
+    function openEntry(type,id){
+      editingId=id||null;editingType=type;
+      const item=id?data.items.find(i=>i.id===id):null;
+      const k=selectedMonth();
+      $('formTitle').textContent=item?'Aanpassen':'Toevoegen';
+      $('formMonth').textContent=getLabel(k);
+      $('entryName').value=item?valueAt(item,k,'name'):'';
+      $('entryAmount').value=item?valueAt(item,k,'amount'):'';
+      $('entryRepeat').value=item?.repeat||(type==='expenses'?'once':'monthly');
+      const now=new Date();
+      $('entryDate').value=item?.date||(currentMonth()===k?dateLocal(now):`${k}-01`);
+      $('repeatField').classList.toggle('hidden',!!item||type==='expenses');
+      $('dateField').classList.toggle('hidden',type!=='expenses');
+      $('scopeField').classList.toggle('hidden',!item||item.repeat!=='monthly');
+      document.querySelector('input[name="editScope"][value="only"]').checked=true;
+      $('removeEntry').classList.toggle('hidden',!item);
+      $('sheet').classList.remove('hidden');
+      $('entryName').focus();
+    }
+    function closeEntry(){ $('sheet').classList.add('hidden'); }
+    $('entryForm').addEventListener('submit',event=>{
+      event.preventDefault();
+      const k=selectedMonth(),name=$('entryName').value.trim(),amount=Number($('entryAmount').value);
+      if(!name||!Number.isFinite(amount)||amount<0)return;
+      const date=editingType==='expenses'?$('entryDate').value:'';
+      if(editingType==='expenses'&&!date.startsWith(k+'-')){alert(`Kies een datum in ${getLabel(k)}.`);return;}
+      if(editingId){
+        const item=data.items.find(i=>i.id===editingId);if(!item)return;
+        if(item.repeat==='monthly'){
+          const scope=document.querySelector('input[name="editScope"]:checked').value;
+          if(scope==='only'){
+            item.overrides ||= {};item.overrides[k]=amount;
+            item.nameOverrides ||= {};item.nameOverrides[k]=name;
+          } else {
+            item.amountChanges ||= {};item.amountChanges[k]=amount;
+            item.nameChanges ||= {};item.nameChanges[k]=name;
+            // De expliciete wijziging vanaf deze maand wint van een eerdere eenmalige wijziging in dezelfde maand.
+            if(item.overrides)delete item.overrides[k];
+            if(item.nameOverrides)delete item.nameOverrides[k];
+          }
+        } else {item.amount=amount;item.name=name;}
+        if(editingType==='expenses')item.date=date;
+      } else {
+        data.items.push({id:getId(),type:editingType,name,amount,month:k,repeat:editingType==='expenses'?'once':$('entryRepeat').value,date,overrides:{}});
+      }
+      if(!persist())return;
+      closeEntry();render();
+    });
+    $('removeEntry').addEventListener('click',()=>{
+      const item=data.items.find(i=>i.id===editingId);if(!item)return;
+      const recurrent=item.repeat==='monthly';
+      const message=recurrent?`Wil je '${valueAt(item,selectedMonth(),'name')}' stopzetten vanaf ${getLabel(selectedMonth())}? Eerdere maanden blijven bewaard.`:`Wil je deze post verwijderen?`;
+      if(!confirm(message))return;
+      if(recurrent)item.deletedFrom=selectedMonth();else data.items=data.items.filter(i=>i.id!==editingId);
+      if(!persist())return;
+      closeEntry();render();
+    });
+    $('cancelEntry').onclick=closeEntry;
+    $('sheet').addEventListener('click',e=>{if(e.target===$('sheet'))closeEntry();});
+    document.addEventListener('click',e=>{
+      const button=e.target.closest('button');if(!button)return;
+      if(button.dataset.tab){tab=button.dataset.tab;render();}
+      if(button.dataset.add)openEntry(button.dataset.add);
+      if(button.dataset.edit){const item=data.items.find(i=>i.id===button.dataset.edit);if(item)openEntry(item.type,item.id);}
+    });
+    function changeMonth(offset){cursor=new Date(cursor.getFullYear(),cursor.getMonth()+offset,1);render();}
+    $('previousMonth').onclick=()=>changeMonth(-1);
+    $('nextMonth').onclick=()=>changeMonth(1);
+    $('goNow').onclick=()=>{cursor=new Date();cursor.setDate(1);render();};
+    $('settingsOpen').onclick=()=>{$('settingsSheet').classList.remove('hidden');};
+    $('closeSettings').onclick=()=>{$('settingsSheet').classList.add('hidden');};
+    $('settingsSheet').addEventListener('click',e=>{if(e.target===$('settingsSheet'))$('settingsSheet').classList.add('hidden');});
+    $('downloadBackup').onclick=()=>{
+      const text=JSON.stringify({format:'mijn-budget-backup',version:2,exportedAt:new Date().toISOString(),items:data.items},null,2);
+      const url=URL.createObjectURL(new Blob([text],{type:'application/json'}));
+      const a=document.createElement('a');a.href=url;a.download=`mijn-budget-backup-${dateLocal(new Date())}.json`;document.body.append(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),1000);
+    };
+    $('restoreBackup').onclick=()=>$('backupFile').click();
+    $('backupFile').addEventListener('change',async event=>{
+      const file=event.target.files[0];if(!file)return;
+      try{
+        if(file.size>5_000_000)throw Error('Het bestand is te groot.');
+        const backup=JSON.parse(await file.text());
+        if(!backup||!Array.isArray(backup.items)||backup.items.length>20000)throw Error('Dit is geen geldige back-up.');
+        for(const item of backup.items){
+          if(!item||typeof item!=='object'||typeof item.name!=='string'||item.name.length>70||!['income','bills','expenses'].includes(item.type)||!['monthly','once'].includes(item.repeat)||!/^\d{4}-(0[1-9]|1[0-2])$/.test(item.month)||!Number.isFinite(Number(item.amount))||typeof item.id!=='string')throw Error('De back-up bevat ongeldige gegevens.');
+        }
+        if(!confirm('Hiermee vervang je alle huidige gegevens in deze browser door de gegevens uit de back-up. Doorgaan?'))return;
+        const previous=data;data={items:backup.items};
+        if(!persist()){data=previous;return;}
+        $('settingsSheet').classList.add('hidden');render();alert('Back-up hersteld.');
+      }catch(error){alert(`Back-up herstellen mislukt: ${error.message}`);}
+      finally{$('backupFile').value='';}
+    });
+    window.addEventListener('keydown',e=>{if(e.key==='Escape'){closeEntry();$('settingsSheet').classList.add('hidden');}});
+    render();
+  </script>
+</body>
+</html>
