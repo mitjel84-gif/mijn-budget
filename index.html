@@ -3,9 +3,9 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-  <meta name="theme-color" content="#100d1b">
-  <meta name="description" content="Mijn Budget: inkomsten, vaste lasten, betaaldatums, rekeningen, uitgaven en spaardoelen per maand.">
-  <title>Mijn Budget 4.0 — jouw overzicht</title>
+  <meta name="theme-color" content="#120e1d">
+  <meta name="description" content="Mijn Budget: een eenvoudige donkerpaarse budgetapp met maandoverzicht, inkomsten, vaste lasten, rekeningen, uitgaven en spaardoelen.">
+  <title>Mijn Budget 5.0 — eenvoudig grip op je geld</title>
   <style>
     :root { color-scheme:dark; --bg:#100d1b; --panel:#201a30; --panel2:#29213c; --border:#403351; --text:#f8f5ff; --muted:#b5aac9; --purple:#b17aff; --purple2:#8e58ea; --green:#74e2a8; --red:#ff9aa8; }
     * { box-sizing:border-box }
@@ -120,13 +120,84 @@
     .bill-row button:focus-visible {outline:2px solid var(--purple)}
     @media(min-width:700px) { main { padding-top:30px } .sheet { align-items:center }.dialog { border-radius:22px;max-height:90dvh } }
     @media(max-width:365px){.logo{font-size:20px}.nav button{min-width:54px}.big{font-size:31px}.stats .number{font-size:18px}}
+
+    /* Versie 5: rustigere interface, grote tikvlakken en vier vaste tabbladen. */
+    :root { --bg:#120e1d; --panel:#211b30; --panel2:#2d2340; --border:#443650; --muted:#c0b5cc; --purple:#c295ff; --purple2:#965af0; --green:#7fe5b7; }
+    body {background:radial-gradient(ellipse 125% 44% at 45% -4%,#362253 0%,#120e1d 75%);font-size:15px;}
+    main {padding:17px 16px 135px;}
+    .top { margin-bottom:18px; }
+    .identity {display:flex;align-items:center;gap:10px;min-width:0;}
+    .brandmark {width:41px;height:41px;border-radius:14px;background:linear-gradient(145deg,#a26dec,#553385);display:grid;place-items:center;flex-shrink:0;box-shadow:0 8px 20px #08050c30;color:#fff;font-size:21px;font-weight:800;}
+    .brand-copy {min-width:0;}
+    .logo {font-size:21px;line-height:1.06;}
+    .brand-sub {font-size:10px;letter-spacing:.2px;color:#c2b4d0;margin-top:4px;}
+    .settings {width:43px;height:43px;font-size:20px;}
+    .yearbtn {height:43px;background:#2e2341;border-color:#584172;color:#e8d7ff;}
+    .monthwrap {margin-bottom:22px;padding:10px 13px 11px;border-radius:17px;background:#221a32;}
+    .monthcap {letter-spacing:1.1px;margin-bottom:2px;}
+    .month strong {font-size:16px;}
+    .month button {height:42px;width:44px;font-size:26px;background:#382a4d;}
+    h1 {font-size:26px;margin-bottom:5px;}
+    h2 {margin:23px 0 10px;}
+    .hint {margin-bottom:18px;line-height:1.55;}
+    .card {background:linear-gradient(147deg,#2b223b,#1c1729);border-color:#493956;border-radius:19px;}
+    .hero {background:linear-gradient(133deg,#512f79,#342148 60%,#261b37);border:1px solid #8359ad;box-shadow:0 14px 35px #09041026;}
+    .big {font-size:clamp(30px,8vw,42px);overflow-wrap:anywhere;}
+    .stats .card {min-width:0;}
+    .stats .number {font-size:clamp(17px,4.5vw,22px);}
+    .summary-grid {display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:14px;}
+    .summary-card {display:flex;flex-direction:column;text-align:left;gap:5px;width:100%;min-width:0;margin:0;padding:15px;border:1px solid #493a5d;border-radius:17px;background:linear-gradient(150deg,#292039,#1d172a);color:var(--text);}
+    .summary-card .summary-top {font-size:12px;color:#cdbedc;display:flex;align-items:center;justify-content:space-between;gap:5px;}
+    .summary-card .summary-value {font-size:clamp(17px,4.5vw,22px);font-weight:820;white-space:normal;overflow-wrap:anywhere;letter-spacing:-.5px;font-variant-numeric:tabular-nums;line-height:1.15;}
+    .summary-card .summary-arrow {color:#d2a9ff;font-size:15px;}
+    .summary-card:active,.quickaction:active {transform:scale(.99);}
+    .quick-grid {display:grid;grid-template-columns:1.15fr 1fr;gap:10px;margin:10px 0 17px;}
+    .quickaction {display:flex;align-items:center;justify-content:center;gap:8px;min-height:51px;border-radius:14px;padding:11px 12px;text-align:center;font-size:14px;font-weight:800;}
+    .quickaction.primary {background:linear-gradient(100deg,#8c4de4,#b474f8);}
+    .quickaction.secondary {background:#2d2241;}
+    .wide-action {width:100%;min-height:47px;border-radius:14px;}
+    .due-card {padding:15px 16px;border-radius:17px;border:1px solid #564269;background:#261c38;margin:15px 0;}
+    .due-label {font-size:12px;color:#d2bfe5;}
+    .due-main {font-weight:800;margin-top:3px;display:flex;justify-content:space-between;align-items:center;gap:8px;}
+    .due-main span:first-child {min-width:0;overflow-wrap:anywhere;}
+    .due-detail {font-size:12px;color:#beaecd;margin-top:4px;}
+    .due-link {border:0;color:#e4c7ff;text-decoration:underline;text-underline-offset:3px;background:transparent;padding:8px 0 0;font-size:12px;font-weight:700;}
+    .budget-info {font-size:12px;line-height:1.5;color:#e0d1ef;margin:7px 0 0;}
+    .mini-eyebrow {font-size:11px;color:#c3b2d6;text-transform:uppercase;letter-spacing:.9px;}
+    .overline {font-size:12px;color:var(--muted);margin-top:5px;}
+    .tip {margin-top:17px;}
+    .nav {padding:9px 10px max(9px,env(safe-area-inset-bottom));border-top:1px solid #514064;background:#171020f5;}
+    .navin {display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:5px;}
+    .nav button {min-width:0;width:100%;border-radius:13px;gap:5px;padding:10px 3px 8px;line-height:1.1;font-size:11px;min-height:60px;}
+    .nav button.active {background:#3b2657;color:#eedaff;}
+    .nav .navicon {display:grid;place-items:center;line-height:1;}
+    .nav .navicon svg {width:22px;height:22px;fill:none;stroke:currentColor;stroke-width:1.9;stroke-linecap:round;stroke-linejoin:round;}
+    .section-title h2 {margin:0;}
+    .line,.bill-row {min-width:0;}
+    .line .lineright {gap:7px;}
+    .line .amount {font-size:14px;}
+    .edit {min-width:43px;height:42px;}
+    .add,.primary,.secondary {min-height:44px;}
+    .bill-actions .primary,.bill-actions .secondary {min-height:39px;}
+    .bill-row .bill-actions {flex-shrink:0;}
+    .yearline {min-height:65px;}
+    .dialog {padding:22px 18px calc(24px + env(safe-area-inset-bottom));}
+    .field input,.field select {min-height:46px;font-size:16px;}
+    .choice label {min-height:46px;}
+    .notice {line-height:1.5;padding:0 20px;}
+    .started-list {display:grid;gap:9px;}
+    .started-list button {display:flex;justify-content:space-between;align-items:center;gap:10px;text-align:left;padding:13px 15px;border:1px solid #57416d;background:#2d203f;color:#fff;border-radius:13px;}
+    .started-list button strong{font-weight:800;}
+    .started-list button span{font-size:12px;color:#dbc0ff;}
+    @media(max-width:360px){.logo{font-size:19px}.brandmark{width:37px;height:37px}.yearbtn{padding:0 9px}.topright{gap:5px}.summary-card{padding:12px}.summary-card .summary-value{font-size:17px}.bill-row{gap:7px;padding:10px}.bill-row .bill-actions{gap:4px}}
+    @media(prefers-reduced-motion:no-preference){.summary-card,.quickaction,.nav button {transition:transform .1s ease,background-color .1s ease;}}
   </style>
 </head>
 <body>
   <main>
     <header class="top">
-      <div class="logo">◈ Mijn <b>Budget</b></div>
-      <div class="topright"><button class="yearbtn" id="yearOpen" aria-label="Bekijk het jaaroverzicht">▥ Jaar</button><button class="settings" id="settingsOpen" aria-label="Instellingen en back-up">⚙</button></div>
+      <div class="identity"><div class="brandmark" aria-hidden="true">◈</div><div class="brand-copy"><div class="logo">Mijn <b>Budget</b></div><div class="brand-sub">Rust in je geldzaken</div></div></div>
+      <div class="topright"><button class="yearbtn" id="yearOpen" aria-label="Bekijk het jaaroverzicht">▦ Jaar</button><button class="settings" id="settingsOpen" aria-label="Instellingen en back-up">⚙</button></div>
     </header>
     <section class="monthwrap" aria-label="Maand kiezen">
       <div class="monthcap">Geselecteerde maand</div>
@@ -138,14 +209,13 @@
       <button class="now hidden" id="goNow">Terug naar deze maand</button>
     </section>
     <div id="view"></div>
-    <div class="notice">Jouw gegevens blijven op dit apparaat. Maak af en toe een back-up via ⚙.</div>
+    <div class="notice">Je gegevens blijven in deze browser. Maak af en toe een back-up via ⚙.</div>
   </main>
   <nav class="nav" aria-label="Hoofdnavigatie"><div class="navin">
-    <button data-tab="overview" class="active"><span class="navicon">⌂</span>Overzicht</button>
-    <button data-tab="income"><span class="navicon">▣</span>Inkomsten</button>
-    <button data-tab="bills"><span class="navicon">▤</span>Vaste lasten</button>
-    <button data-tab="expenses"><span class="navicon">◷</span>Uitgaven</button>
-    <button data-tab="savings"><span class="navicon">◇</span>Sparen</button>
+    <button data-tab="overview" class="active" aria-label="Overzicht"><span class="navicon"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m3 10 9-7 9 7v10a1 1 0 0 1-1 1h-5v-7H9v7H4a1 1 0 0 1-1-1Z"/></svg></span>Overzicht</button>
+    <button data-tab="expenses" aria-label="Uitgaven"><span class="navicon"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="4" width="18" height="16" rx="3"/><path d="M3 9h18M7 14h4"/></svg></span>Uitgaven</button>
+    <button data-tab="payments" aria-label="Rekeningen"><span class="navicon"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 3h12v18l-3-2-3 2-3-2-3 2Z"/><path d="M9 8h6M9 12h6"/></svg></span>Rekeningen</button>
+    <button data-tab="savings" aria-label="Sparen"><span class="navicon"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20 10c.6 1.1 1 2.4 1 4v2h-3l-2 4h-3l-1-3H9l-1 3H5l-2-5v-4c0-3 3-5 7-5h4c3 0 5 2 6 4Z"/><path d="M9 9h4M16 12h.01"/><path d="M7 6 6 3"/></svg></span>Sparen</button>
   </div></nav>
   <div class="sheet hidden" id="sheet" role="dialog" aria-modal="true" aria-labelledby="formTitle">
     <form class="dialog" id="entryForm">
@@ -194,7 +264,7 @@
   <div class="sheet hidden" id="settingsSheet" role="dialog" aria-modal="true" aria-labelledby="settingsTitle">
     <section class="dialog">
       <h2 id="settingsTitle">Instellingen en back-up</h2>
-      <p class="subtitle">Bewaar je gegevens als bestand voor de zekerheid.</p>
+      <p class="subtitle">Mijn Budget 5.0 · Bewaar je gegevens af en toe als back-up.</p>
       <button class="secondary settingsRow" type="button" id="downloadBackup">↓ Back-up downloaden</button>
       <button class="secondary settingsRow" type="button" id="restoreBackup">↑ Back-up herstellen</button>
       <input id="backupFile" class="hidden" type="file" accept=".json,application/json">
@@ -292,7 +362,8 @@
       return `<h1>Rekeningen</h1><p class="hint">Vink per maand aan wat je hebt betaald.</p>
         <div class="bill-summary"><div class="card hero"><div class="kicker">Nog te betalen</div><div class="number violet">${euro(sum.pendingAmount)}</div><div class="meta">${sum.pending.length} ${sum.pending.length===1?'rekening':'rekeningen'}</div></div>
         <div class="card"><div class="kicker">Afgevinkt als betaald</div><div class="number green">${euro(sum.paidAmount)}</div><div class="meta">${sum.paid.length} ${sum.paid.length===1?'rekening':'rekeningen'}</div></div></div>
-        <div class="section-title"><h2>Openstaande rekeningen</h2><button class="pill" data-jump="bills">Vaste lasten ›</button></div>
+        <button class="secondary wide-action" data-jump="bills">✎ Vaste lasten en betaaldatums beheren →</button>
+        <h2>Openstaande rekeningen</h2>
         ${sum.pending.sort(byDate).map(i=>renderBillRow(i,k)).join('')||'<p class="empty">Alles afgevinkt voor deze maand! Controleer wel je echte bankafschrijvingen.</p>'}
         ${sum.paid.length?`<h2>Betaald</h2>${sum.paid.sort(byDate).map(i=>renderBillRow(i,k)).join('')}`:''}
         ${!sum.bills.length?'<button class="add" data-add="bills">＋ Voeg je eerste vaste last toe</button>':''}
@@ -336,21 +407,36 @@
       const k=selectedMonth(),{income,bills,expenses,saved,remaining}=monthlyTotals(k);
       $('monthLabel').textContent=getLabel(k);
       $('goNow').classList.toggle('hidden',k===currentMonth());
-      document.querySelectorAll('.nav button').forEach(b=>b.classList.toggle('active',b.dataset.tab===(tab==='payments'?'bills':tab)));
+      document.querySelectorAll('.nav button').forEach(b=>{const active=b.dataset.tab===(['payments','bills'].includes(tab)?'payments':['year','income'].includes(tab)?'overview':tab);b.classList.toggle('active',active);if(active)b.setAttribute('aria-current','page');else b.removeAttribute('aria-current');});
       $('yearOpen').classList.toggle('active',tab==='year');
       let markup='';
       if(tab==='overview'){
         const ratio=income>0?Math.max(0,Math.min(100,(bills+expenses+saved)/income*100)):0;
-        markup=`<h1>Overzicht</h1><p class="hint">Jouw geldzaken in ${getLabel(k)}</p>
-          <div class="card hero"><div class="kicker">Volgens je maandbudget nog vrij</div><div class="big ${remaining<0?'negative':'violet'}">${euro(remaining)}</div><div class="meta">Na alle vaste lasten (ook nog onbetaalde), ingevoerde uitgaven en spaargeld</div><div class="progress" aria-label="Deel van je inkomen verdeeld"><span style="width:${ratio}%"></span></div></div>
-          <div class="bill-banner"><div><strong>Rekeningen deze maand</strong><div class="meta">Nog te betalen: <b>${euro(billSummary(k).pendingAmount)}</b> · ${billSummary(k).pending.length} open</div></div><button class="primary" data-jump="payments">Bekijk ›</button></div>
-          <div class="stats"><div class="card"><div class="kicker">Inkomsten</div><div class="number green">${euro(income)}</div></div><div class="card"><div class="kicker">Vaste lasten</div><div class="number">${euro(bills)}</div></div>
-          <div class="card"><div class="kicker">Overige uitgaven</div><div class="number">${euro(expenses)}</div></div><div class="card"><div class="kicker">Opzijgezet (netto)</div><div class="number violet">${euro(saved)}</div></div></div>
-          <h2>Snel toevoegen</h2><div class="buttons"><button class="primary" data-add="income">+ Inkomsten</button><button class="primary" data-add="expenses">+ Uitgave</button></div>
-          <div class="section-title"><h2>Mijn spaardoelen</h2><button class="pill" data-jump="savings">Bekijk ›</button></div>
-          <div class="card"><div class="kicker">Totaal genoteerd spaargeld tot deze maand</div><div class="number" style="font-size:22px;font-weight:800;color:var(--purple)">${euro(activeGoals(k).reduce((a,g)=>a+balanceAt(g,k),0))}</div></div>
-          <button class="add" data-jump="year">▥ Bekijk jaaroverzicht ${cursor.getFullYear()}</button>
-          <div class="tip"><b>Let op:</b> dit is een maandbudget, geen live banksaldo. Het bedrag gaat ervan uit dat je alle ingevoerde inkomsten ontvangt en alle kosten correct hebt ingevuld. Je kunt dus niet zeker weten of dit bedrag vandaag op je rekening staat.</div>`;
+        const summary=billSummary(k),today=dateLocal(new Date());
+        const upcoming=summary.pending.filter(i=>dueDateOf(i,k)&&dueDateOf(i,k)>=today).sort((a,b)=>dueDateOf(a,k).localeCompare(dueDateOf(b,k)))[0];
+        const noEntries=!data.items.length&&!data.goals.length;
+        markup=`<h1>Goed overzicht</h1><p class="hint">Dit is je maand in één oogopslag.</p>
+          <div class="card hero"><div class="mini-eyebrow">Nog vrij in ${html(getLabel(k))}</div>
+            <div class="big ${remaining<0?'negative':'violet'}">${euro(remaining)}</div>
+            <p class="budget-info">Na je ingevulde vaste lasten, uitgaven en spaargeld.</p>
+            <div class="progress" role="progressbar" aria-label="Ingevuld deel van maandinkomen" aria-valuemin="0" aria-valuemax="100" aria-valuenow="${Math.round(ratio)}"><span style="width:${ratio}%"></span></div>
+            <div class="overline">${income>0?Math.round(ratio)+'% van je inkomsten verdeeld':'Voeg inkomsten toe om je maandbudget te berekenen'}</div></div>
+          <div class="summary-grid">
+            <button class="summary-card" data-jump="income"><span class="summary-top">Inkomsten <span class="summary-arrow">↗</span></span><span class="summary-value green">${euro(income)}</span><span class="tiny">Aanpassen</span></button>
+            <button class="summary-card" data-jump="bills"><span class="summary-top">Vaste lasten <span class="summary-arrow">↗</span></span><span class="summary-value">${euro(bills)}</span><span class="tiny">Beheren</span></button>
+            <button class="summary-card" data-jump="expenses"><span class="summary-top">Uitgaven <span class="summary-arrow">↗</span></span><span class="summary-value">${euro(expenses)}</span><span class="tiny">Bekijken</span></button>
+            <button class="summary-card" data-jump="savings"><span class="summary-top">Opzijgezet <span class="summary-arrow">↗</span></span><span class="summary-value violet">${euro(saved)}</span><span class="tiny">Deze maand netto</span></button>
+          </div>
+          ${noEntries?`<h2>Begin in drie stappen</h2><div class="started-list"><button data-add="income"><strong>1. Voeg je inkomsten toe</strong><span>Start →</span></button><button data-add="bills"><strong>2. Vul je vaste lasten in</strong><span>Verder →</span></button><button data-add="expenses"><strong>3. Houd uitgaven bij</strong><span>Verder →</span></button></div>`:''}
+          <h2>Snel toevoegen</h2><div class="quick-grid"><button class="primary quickaction" data-add="expenses">＋ Uitgave</button><button class="secondary quickaction" data-add="income">＋ Inkomsten</button></div>
+          <div class="due-card"><div class="due-label">Rekeningen deze maand</div>
+            <div class="due-main"><span>${summary.pending.length} ${summary.pending.length===1?'rekening open':'rekeningen open'}</span><strong>${euro(summary.pendingAmount)}</strong></div>
+            <div class="due-detail">${upcoming?`Eerstvolgende: ${html(upcoming.shownName)} · ${html(readableDue(upcoming,k))}`:summary.pending.length?'Controleer de betaaldatums van je rekeningen.':'Geen openstaande rekeningen af te vinken.'}</div>
+            <button class="due-link" data-jump="payments">Bekijk je rekeningen →</button></div>
+          <div class="section-title"><h2>Spaardoelen</h2><button class="pill" data-jump="savings">Bekijken ›</button></div>
+          <div class="card"><div class="kicker">Totaal gespaard tot deze maand</div><div class="number violet" style="font-size:23px;font-weight:800;margin-top:5px">${euro(activeGoals(k).reduce((a,g)=>a+balanceAt(g,k),0))}</div></div>
+          <button class="secondary wide-action" data-jump="year">▦ Jaaroverzicht ${cursor.getFullYear()} bekijken →</button>
+          <p class="tip"><strong>Goed om te weten:</strong> dit is je ingevulde maandbudget, niet je banksaldo. Een nog niet ontvangen salaris wordt wel als gepland inkomen geteld.</p>`;
       } else if(tab==='savings'){
         const goals=activeGoals(k),savedTotal=goals.reduce((a,g)=>a+balanceAt(g,k),0);
         markup=`<h1>Spaardoelen</h1><p class="hint">Leg vast hoeveel je apart hebt gezet en waarvoor.</p>
@@ -365,10 +451,10 @@
       } else {
         const titles={income:['Inkomsten','Vul je salaris en eventuele extra inkomsten in.','inkomst'],bills:['Vaste lasten','Huur, verzekeringen en andere terugkerende kosten.','vaste last'],expenses:['Uitgaven','Wat heb je deze maand uitgegeven?','uitgave']};
         const [heading,hint,name]=titles[tab];
-        markup=`<h1>${heading}</h1><p class="hint">${hint}</p><div class="card hero"><div class="kicker">Totaal ${getLabel(k)}</div><div class="big violet">${euro(total(tab))}</div></div>
+        markup=`${tab==='income'?'<button class="due-link" data-jump="overview" style="margin:0 0 9px">← Terug naar overzicht</button>':''}<h1>${heading}</h1><p class="hint">${hint}</p><div class="card hero"><div class="kicker">Totaal ${getLabel(k)}</div><div class="big violet">${euro(total(tab))}</div></div>
           ${monthItems(tab).map(line).join('')||'<p class="empty">Voor deze maand staat er nog niets.</p>'}
           <button class="add" data-add="${tab}">＋ ${name[0].toUpperCase()+name.slice(1)} toevoegen</button>
-          ${tab==='bills'?'<button class="secondary" data-jump="payments" style="width:100%;margin-top:12px">▤ Rekeningen en betaaldatums bekijken ›</button>':''}
+          ${tab==='bills'?'<button class="secondary wide-action" data-jump="payments" style="margin-top:12px">▤ Bekijk je rekeningen →</button>':''}
           ${tab==='income'||tab==='bills'?'<div class="tip">Tik op ✎ om een bedrag te wijzigen. Kies daarna of de wijziging alleen voor deze maand geldt, of ook voor volgende maanden.</div>':''}`;
       }
       $('view').innerHTML=markup;
@@ -532,7 +618,7 @@
     $('closeSettings').onclick=()=>{$('settingsSheet').classList.add('hidden');};
     $('settingsSheet').addEventListener('click',e=>{if(e.target===$('settingsSheet'))$('settingsSheet').classList.add('hidden');});
     $('downloadBackup').onclick=()=>{
-      const text=JSON.stringify({format:'mijn-budget-backup',version:4,exportedAt:new Date().toISOString(),items:data.items,goals:data.goals,payments:data.payments},null,2);
+      const text=JSON.stringify({format:'mijn-budget-backup',version:5,exportedAt:new Date().toISOString(),items:data.items,goals:data.goals,payments:data.payments},null,2);
       const url=URL.createObjectURL(new Blob([text],{type:'application/json'}));
       const a=document.createElement('a');a.href=url;a.download=`mijn-budget-backup-${dateLocal(new Date())}.json`;document.body.append(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),1000);
     };
