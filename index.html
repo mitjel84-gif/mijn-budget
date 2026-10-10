@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <meta name="theme-color" content="#120e1d">
   <meta name="description" content="Mijn Budget: een eenvoudige donkerpaarse budgetapp met maandoverzicht, inkomsten, vaste lasten, rekeningen, uitgaven en spaardoelen.">
-  <title>Mijn Budget 5.0 — eenvoudig grip op je geld</title>
+  <title>Mijn Budget 6.0 — veilig zelf testen</title>
   <style>
     :root { color-scheme:dark; --bg:#100d1b; --panel:#201a30; --panel2:#29213c; --border:#403351; --text:#f8f5ff; --muted:#b5aac9; --purple:#b17aff; --purple2:#8e58ea; --green:#74e2a8; --red:#ff9aa8; }
     * { box-sizing:border-box }
@@ -191,6 +191,28 @@
     .started-list button span{font-size:12px;color:#dbc0ff;}
     @media(max-width:360px){.logo{font-size:19px}.brandmark{width:37px;height:37px}.yearbtn{padding:0 9px}.topright{gap:5px}.summary-card{padding:12px}.summary-card .summary-value{font-size:17px}.bill-row{gap:7px;padding:10px}.bill-row .bill-actions{gap:4px}}
     @media(prefers-reduced-motion:no-preference){.summary-card,.quickaction,.nav button {transition:transform .1s ease,background-color .1s ease;}}
+
+    /* V6: optioneel privéaccount; lokaal gebruik blijft de standaard. */
+    .storage-strip {display:flex;align-items:center;justify-content:space-between;gap:8px;margin:-6px 0 12px;color:#c6b9d5;font-size:12px;}
+    .storage-strip button {background:#2a203a;border:1px solid #5b4172;border-radius:999px;color:#e5ccff;padding:8px 12px;font-size:12px;font-weight:700;min-height:37px;}
+    .storage-strip .dot {display:inline-block;width:7px;height:7px;background:#bcb0c8;border-radius:50%;margin-right:6px;}
+    .storage-strip .dot.synced {background:#7fe5b7}.storage-strip .dot.dirty {background:#fbc777}
+    .account-panel {padding:14px 15px;background:#292039;border:1px solid #5b4172;border-radius:16px;margin:12px 0 16px;}
+    .account-panel h3 {margin:0 0 5px;font-size:16px}.account-panel p{margin:7px 0;color:#d1c5de;font-size:13px;line-height:1.5}
+    .account-panel .secondary,.account-panel .primary {width:100%;margin-top:10px;}
+    .account-option {display:grid;gap:9px;margin-top:12px}
+    .account-message {padding:10px;border-radius:12px;background:#352648;border:1px solid #72508a;color:#f1e2ff;font-size:13px;line-height:1.5;margin:12px 0;overflow-wrap:anywhere}
+    .account-message:empty {display:none}
+    .cloud-lock main>*:not(.top):not(.storage-strip){visibility:hidden}
+    .cloud-lock nav{pointer-events:none;opacity:.18}
+    .cloud-lock .storage-strip button {pointer-events:none}
+    .cloud-lock #accountSheet{visibility:visible}
+    .auth-actions {display:flex;gap:8px;align-items:stretch}.auth-actions button{flex:1}
+    .secondary-link {display:block;border:0;background:none;color:#ddbcff;padding:10px 0;font-size:13px;text-decoration:underline;text-underline-offset:3px}
+    .setup-steps {font-size:12px;line-height:1.6;color:#c9bcdb;margin-bottom:12px}
+    .account-user {font-weight:750;overflow-wrap:anywhere;color:#dbc3ff}
+    .progress-inline{font-size:12px;color:#fbc777;min-height:16px;margin-top:5px}
+    @media(max-width:360px){.storage-strip{font-size:11px}.storage-strip button{font-size:11px}}
   </style>
 </head>
 <body>
@@ -199,6 +221,7 @@
       <div class="identity"><div class="brandmark" aria-hidden="true">◈</div><div class="brand-copy"><div class="logo">Mijn <b>Budget</b></div><div class="brand-sub">Rust in je geldzaken</div></div></div>
       <div class="topright"><button class="yearbtn" id="yearOpen" aria-label="Bekijk het jaaroverzicht">▦ Jaar</button><button class="settings" id="settingsOpen" aria-label="Instellingen en back-up">⚙</button></div>
     </header>
+    <div class="storage-strip"><span id="storageIndicator" role="status" aria-live="polite"><span class="dot"></span>Alleen op dit apparaat</span><button type="button" id="accountOpen">♙ Account</button></div>
     <section class="monthwrap" aria-label="Maand kiezen">
       <div class="monthcap">Geselecteerde maand</div>
       <div class="month">
@@ -209,7 +232,7 @@
       <button class="now hidden" id="goNow">Terug naar deze maand</button>
     </section>
     <div id="view"></div>
-    <div class="notice">Je gegevens blijven in deze browser. Maak af en toe een back-up via ⚙.</div>
+    <div class="notice" id="storageNotice">Je gegevens blijven in deze browser. Maak af en toe een back-up via ⚙.</div>
   </main>
   <nav class="nav" aria-label="Hoofdnavigatie"><div class="navin">
     <button data-tab="overview" class="active" aria-label="Overzicht"><span class="navicon"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m3 10 9-7 9 7v10a1 1 0 0 1-1 1h-5v-7H9v7H4a1 1 0 0 1-1-1Z"/></svg></span>Overzicht</button>
@@ -264,12 +287,68 @@
   <div class="sheet hidden" id="settingsSheet" role="dialog" aria-modal="true" aria-labelledby="settingsTitle">
     <section class="dialog">
       <h2 id="settingsTitle">Instellingen en back-up</h2>
-      <p class="subtitle">Mijn Budget 5.0 · Bewaar je gegevens af en toe als back-up.</p>
+      <p class="subtitle">Mijn Budget 6.0 · Maak regelmatig een back-up.</p>
+      <button class="secondary settingsRow" type="button" id="openAccountFromSettings">♙ Account en online opslag (optioneel)</button>
       <button class="secondary settingsRow" type="button" id="downloadBackup">↓ Back-up downloaden</button>
       <button class="secondary settingsRow" type="button" id="restoreBackup">↑ Back-up herstellen</button>
       <input id="backupFile" class="hidden" type="file" accept=".json,application/json">
-      <p class="tip">Je hoeft geen account aan te maken. De gegevens blijven alleen in deze browser en worden niet aan je bank gekoppeld. Een back-up herstellen vervangt je huidige gegevens, inclusief spaardoelen en betaalstatussen.</p>
+      <p class="tip">Zonder account blijven je gegevens alleen op dit apparaat. Met een account kun je optioneel synchroniseren. De app is niet gekoppeld aan je bank. Herstellen van een back-up vervangt de gegevens van de gekozen opslagmodus.</p>
       <button class="primary" type="button" id="closeSettings" style="width:100%">Sluiten</button>
+    </section>
+  </div>
+  <div class="sheet hidden" id="accountSheet" role="dialog" aria-modal="true" aria-labelledby="accountTitle">
+    <section class="dialog">
+      <h2 id="accountTitle">Mijn Budget-account</h2>
+      <p class="subtitle">Versie 6.0 · Eerst zelf testen, online opslag is optioneel.</p>
+      <div id="accountMessage" class="account-message" role="status" aria-live="polite"></div>
+      <div id="accountIntro" class="account-panel">
+        <h3>Je gegevens blijven van jou</h3>
+        <p>De lokale versie blijft werken zonder registratie. Online opslag werkt pas nadat je een Supabase-project hebt ingesteld.</p>
+        <button type="button" id="stayLocal" class="secondary">Verder zonder account</button>
+      </div>
+      <form id="cloudSetup" class="hidden">
+        <div class="setup-steps">Eenmalig: maak een Supabase-project en voer de SQL uit het meegeleverde bestand uit. Vul daarna je Project URL en <strong>publishable</strong> key in. Gebruik NOOIT een secret of service-role key.</div>
+        <label class="field">Supabase Project URL<input id="cloudUrl" type="url" autocomplete="url" placeholder="https://voorbeeld.supabase.co" required></label>
+        <label class="field">Publishable key (of oude anon key)<input id="cloudKey" type="text" autocomplete="off" spellcheck="false" placeholder="sb_publishable_..." required></label>
+        <button class="primary" type="submit" style="width:100%">Online opslag instellen</button>
+      </form>
+      <div id="authPanel" class="hidden">
+        <p class="hint">Log in met je eigen e-mailadres. Je wachtwoord wordt door Supabase verwerkt, niet door deze website opgeslagen.</p>
+        <form id="authForm">
+          <label class="field">E-mailadres<input id="authEmail" type="email" autocomplete="email" required maxlength="254" placeholder="jij@voorbeeld.nl"></label>
+          <label class="field">Wachtwoord<input id="authPassword" type="password" autocomplete="current-password" required minlength="10" maxlength="128" placeholder="Gebruik 10 of meer tekens"></label>
+          <div class="auth-actions"><button id="signIn" type="submit" class="primary">Inloggen</button><button id="signUp" type="button" class="secondary">Registreren</button></div>
+        </form>
+        <button type="button" class="secondary-link" id="forgotPassword">Wachtwoord vergeten?</button>
+      </div>
+      <form id="recoveryForm" class="hidden">
+        <p class="hint">Stel een nieuw wachtwoord in voor je account.</p>
+        <label class="field">Nieuw wachtwoord<input id="newPassword" type="password" autocomplete="new-password" required minlength="8" maxlength="128"></label>
+        <button class="primary" type="submit">Wachtwoord wijzigen</button>
+      </form>
+      <div id="onboardingPanel" class="hidden">
+        <div class="account-panel"><h3>Welkom bij je eigen account</h3>
+        <p>Er is nog geen online budget voor dit account. Je bestaande lokale gegevens worden <strong>niet automatisch overgezet</strong>.</p>
+        <p id="localCount"></p>
+        <div class="account-option"><button class="primary" type="button" id="importLocal">Mijn lokale gegevens naar mijn account kopiëren</button><button class="secondary" type="button" id="startEmpty">Met een leeg online budget beginnen</button></div>
+        <p>Je lokale budget en je eerdere back-ups blijven bewaard.</p></div>
+      </div>
+      <div id="signedInPanel" class="hidden">
+        <div class="account-panel"><h3>Online account actief</h3>
+        <p class="account-user" id="accountEmail"></p>
+        <p id="cloudState"></p>
+        <button type="button" id="syncNow" class="secondary">↻ Synchronisatie opnieuw proberen</button>
+        <button type="button" id="signOut" class="secondary">Uitloggen en lokaal verdergaan</button>
+        <p>Let op: lokaal opgeslagen gegevens zijn gescheiden van je online budget.</p></div>
+      </div>
+      <div id="conflictPanel" class="hidden">
+        <div class="account-panel"><h3>Er is een nieuwere online versie</h3>
+          <p>De wijzigingen op dit apparaat zijn apart bewaard, maar nog niet geüpload. Maak eerst een back-up via de instellingen als je die wilt bewaren.</p>
+          <button type="button" class="secondary" id="loadRemote">Online versie laden (lokale online wijzigingen vervallen)</button>
+          <button type="button" class="secondary" id="keepDraft">Mijn wijzigingen bewaren en huidige online versie vervangen</button>
+        </div>
+      </div>
+      <div class="buttons"><button type="button" class="secondary" id="changeCloudConfig">Instellingen wijzigen</button><button type="button" class="primary" id="closeAccount">Sluiten</button></div>
     </section>
   </div>
   <script>
@@ -284,15 +363,31 @@
     const dateLocal=d=>`${yearMonth(d)}-${String(d.getDate()).padStart(2,'0')}`;
     const getLabel=k=>new Date(Number(k.slice(0,4)),Number(k.slice(5,7))-1,1).toLocaleDateString('nl-NL',{month:'long',year:'numeric'});
     const getId=()=>globalThis.crypto&&crypto.randomUUID?crypto.randomUUID():`id-${Date.now()}-${Math.random().toString(36).slice(2)}`;
-    let data={items:[],goals:[],payments:[]};
-    try {
-      const old=JSON.parse(localStorage.getItem(STORAGE_KEY));
-      if(old&&Array.isArray(old.items))data={...old,goals:Array.isArray(old.goals)?old.goals:[],payments:Array.isArray(old.payments)?old.payments:[]};
-    } catch(error) { console.warn('Opslag kon niet worden geladen',error); }
+    const emptyBudget=()=>({items:[],goals:[],payments:[]});
+    const normalizeBudget=raw=>raw&&Array.isArray(raw.items)?{...raw,items:raw.items,goals:Array.isArray(raw.goals)?raw.goals:[],payments:Array.isArray(raw.payments)?raw.payments:[]}:emptyBudget();
+    const safeLocalRead=()=>{try{return normalizeBudget(JSON.parse(localStorage.getItem(STORAGE_KEY)))}catch{return emptyBudget()}};
+    let localBudget=safeLocalRead(),data=localBudget;
     let cursor=new Date(),tab='overview',editingId=null,editingType=null,editingGoal=null,savingGoal=null,editingSaving=null;
     cursor.setDate(1);
     const selectedMonth=()=>yearMonth(cursor);
-    function persist(){try{localStorage.setItem(STORAGE_KEY,JSON.stringify(data));return true}catch(e){alert('Opslaan is niet gelukt. Controleer of je browser opslag toestaat.');return false}}
+    /* Zonder Supabase is de hele app volledig lokaal. Online data krijgt een eigen, per-account cache. */
+    const CONFIG_KEY='mijn-budget-v6-cloud-config', MODE_KEY='mijn-budget-v6-mode',CACHE_PREFIX='mijn-budget-v6-cloud-';
+    const DEFAULT_SUPABASE_URL='';             // Optioneel: vul dit in voor toekomstige testers.
+    const DEFAULT_PUBLISHABLE_KEY='';          // Alleen een publishable of anon key. NOOIT een secret key!
+    let cloudConfig={url:DEFAULT_SUPABASE_URL,key:DEFAULT_PUBLISHABLE_KEY};
+    try{const saved=JSON.parse(localStorage.getItem(CONFIG_KEY));if(saved?.url&&saved?.key)cloudConfig=saved}catch{}
+    let sb=null,cloudUser=null,cloudMode=false,cloudRevision=0,cloudDirty=false,cloudConflict=false,cloudBusy=false,cloudTimer=null,cloudEpoch=0,cloudStatus='',recoveryPending=false;
+    const cacheKey=uid=>CACHE_PREFIX+uid;
+    function getCloudCache(uid){try{return JSON.parse(localStorage.getItem(cacheKey(uid)))}catch{return null}}
+    function cacheCloud(){if(!cloudUser||!cloudMode)return;try{localStorage.setItem(cacheKey(cloudUser.id),JSON.stringify({payload:data,revision:cloudRevision,dirty:cloudDirty,updatedAt:new Date().toISOString()}))}catch{cloudStatus='Opslag van tijdelijke wijzigingen mislukt';updateCloudUI();}}
+    function setCloudStatus(message){cloudStatus=message;updateCloudUI()}
+    function persist(){
+      try{
+        if(cloudMode){cloudDirty=true;cacheCloud();setCloudStatus('Wijzigingen wachten op synchronisatie');queueCloudSync();}
+        else {localStorage.setItem(STORAGE_KEY,JSON.stringify(data));localBudget=data;}
+        return true;
+      }catch(e){alert('Opslaan is niet gelukt. Controleer of je browser opslag toestaat.');return false;}
+    }
     // 'overrides' uit versie 1 blijft werken; nieuwe blijvende wijzigingen gebruiken 'amountChanges'.
     function included(item,k){
       if(item.deletedFrom&&k>=item.deletedFrom)return false;
@@ -615,10 +710,11 @@
     $('goNow').onclick=()=>{cursor=new Date();cursor.setDate(1);render();};
     $('yearOpen').onclick=()=>{tab=tab==='year'?'overview':'year';render();};
     $('settingsOpen').onclick=()=>{$('settingsSheet').classList.remove('hidden');};
+    $('openAccountFromSettings').onclick=()=>{$('settingsSheet').classList.add('hidden');openAccount();};
     $('closeSettings').onclick=()=>{$('settingsSheet').classList.add('hidden');};
     $('settingsSheet').addEventListener('click',e=>{if(e.target===$('settingsSheet'))$('settingsSheet').classList.add('hidden');});
     $('downloadBackup').onclick=()=>{
-      const text=JSON.stringify({format:'mijn-budget-backup',version:5,exportedAt:new Date().toISOString(),items:data.items,goals:data.goals,payments:data.payments},null,2);
+      const text=JSON.stringify({format:'mijn-budget-backup',version:6,exportedAt:new Date().toISOString(),items:data.items,goals:data.goals,payments:data.payments},null,2);
       const url=URL.createObjectURL(new Blob([text],{type:'application/json'}));
       const a=document.createElement('a');a.href=url;a.download=`mijn-budget-backup-${dateLocal(new Date())}.json`;document.body.append(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),1000);
     };
@@ -647,8 +743,196 @@
       }catch(error){alert(`Back-up herstellen mislukt: ${error.message}`);}
       finally{$('backupFile').value='';}
     });
-    window.addEventListener('keydown',e=>{if(e.key==='Escape'){closeEntry();closeGoal();closeSaving();$('settingsSheet').classList.add('hidden');}});
+
+    // --- Online account, alleen na expliciet instellen en inloggen ---
+    function updateCloudUI(){
+      const text=cloudMode?(cloudConflict?'Conflict · wijzigingen lokaal bewaard':cloudDirty?'Online account · nog niet gesynchroniseerd':'Online account · gesynchroniseerd'):'Alleen op dit apparaat';
+      const state=$('storageIndicator');
+      state.innerHTML=`<span class="dot ${cloudMode?(cloudDirty||cloudConflict?'dirty':'synced'):''}"></span>${html(text)}`;
+      $('storageNotice').textContent=cloudMode?'Online account actief. Maak af en toe een back-up; wacht bij wijzigingen op ‘gesynchroniseerd’.':'Je gegevens blijven in deze browser. Maak af en toe een back-up via ⚙.';
+      $('cloudState').textContent=cloudStatus||(cloudDirty?'Nog niet gesynchroniseerd':'Gegevens online bijgewerkt');
+      $('syncNow').disabled=!cloudMode||cloudBusy||cloudConflict;
+      $('syncNow').textContent=cloudDirty?'↻ Opnieuw synchroniseren':'↻ Online gegevens verversen';
+      $('conflictPanel').classList.toggle('hidden',!cloudConflict);
+    }
+    function setAccountMessage(message){$('accountMessage').textContent=message||'';}
+    function setAccountPanel(which){
+      for(const id of ['cloudSetup','authPanel','onboardingPanel','signedInPanel','recoveryForm'])$(id).classList.toggle('hidden',id!==which);
+      $('accountIntro').classList.toggle('hidden',which==='signedInPanel'||which==='onboardingPanel'||which==='recoveryForm');
+      $('changeCloudConfig').classList.toggle('hidden',which==='onboardingPanel'||which==='recoveryForm');
+      if(which==='cloudSetup'){$('cloudUrl').value=cloudConfig.url||'';$('cloudKey').value=cloudConfig.key||'';}
+    }
+    function openAccount(){
+      setAccountMessage('');
+      if(cloudUser&&cloudMode){setAccountPanel('signedInPanel');$('accountEmail').textContent=cloudUser.email||'Ingelogd';}
+      else if(cloudUser){setAccountPanel('onboardingPanel');$('localCount').textContent=`${localBudget.items.length} posten, ${localBudget.goals.length} spaardoelen en ${localBudget.payments.length} betaalregistraties staan nog lokaal.`;}
+      else setAccountPanel(cloudConfig.url&&cloudConfig.key?'authPanel':'cloudSetup');
+      $('accountSheet').classList.remove('hidden');updateCloudUI();
+    }
+    function closeAccount(){if(document.body.classList.contains('cloud-lock'))return;$('accountSheet').classList.add('hidden')}
+    function unlockAccount(){document.body.classList.remove('cloud-lock');$('accountSheet').classList.add('hidden');updateCloudUI();render();}
+    function lockAccount(msg){document.body.classList.add('cloud-lock');openAccount();if(msg)setAccountMessage(msg);}
+    function keyIsSafe(key){
+      if(key.startsWith('sb_publishable_'))return true;
+      if(key.startsWith('sb_secret_'))return false;
+      try{const jwt=JSON.parse(atob(key.split('.')[1].replace(/-/g,'+').replace(/_/g,'/')));return jwt.role==='anon'}catch{return false}
+    }
+    function validCloudConfig(url,key){
+      try{const u=new URL(url);return u.protocol==='https:'&&!!u.hostname&&!u.username&&!u.password&&!u.search&&!u.hash&&keyIsSafe(key)}catch{return false}
+    }
+    async function ensureSupabase(){
+      if(sb)return sb;
+      if(!validCloudConfig(cloudConfig.url,cloudConfig.key))throw Error('Vul een geldige HTTPS Project URL en een publishable/anon key in.');
+      if(!window.supabase?.createClient){
+        await new Promise((resolve,reject)=>{
+          const tag=document.createElement('script');tag.src='https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.117.3';
+          tag.onload=resolve;tag.onerror=()=>reject(Error('Supabase kon niet worden geladen. Controleer je internet.'));document.head.appendChild(tag);
+        });
+      }
+      sb=window.supabase.createClient(cloudConfig.url,cloudConfig.key,{auth:{persistSession:true,autoRefreshToken:true,detectSessionInUrl:true}});
+      sb.auth.onAuthStateChange((event,session)=>{
+        if(event==='PASSWORD_RECOVERY'){recoveryPending=true;setTimeout(()=>{document.body.classList.add('cloud-lock');$('accountSheet').classList.remove('hidden');setAccountPanel('recoveryForm');setAccountMessage('Kies je nieuwe wachtwoord.');},0)}
+      });
+      return sb;
+    }
+    function queueCloudSync(){if(!cloudMode||!cloudDirty||cloudConflict)return;clearTimeout(cloudTimer);cloudTimer=setTimeout(flushCloud,450)}
+    async function flushCloud(){
+      if(!sb||!cloudUser||!cloudMode||!cloudDirty||cloudBusy||cloudConflict)return;
+      cloudBusy=true;const uid=cloudUser.id,epoch=cloudEpoch,revision=cloudRevision,snapshot=JSON.stringify(data);
+      setCloudStatus('Online bewaren…');
+      try{
+        const {data:rows,error}=await sb.from('mijn_budget_data').update({payload:JSON.parse(snapshot),revision:revision+1,updated_at:new Date().toISOString()}).eq('user_id',uid).eq('revision',revision).select('revision');
+        if(epoch!==cloudEpoch||!cloudMode||cloudUser?.id!==uid)return;
+        if(error)throw error;
+        if(!rows?.length){cloudConflict=true;setCloudStatus('Nieuwere online versie gevonden; niets overschreven. Kies in Account wat je wilt doen.');return;}
+        cloudRevision=Number(rows[0].revision);
+        cloudDirty=snapshot!==JSON.stringify(data);
+        cacheCloud();setCloudStatus(cloudDirty?'Er zijn nieuwe wijzigingen om te bewaren.':'Alle wijzigingen gesynchroniseerd');
+      }catch(err){if(epoch===cloudEpoch)setCloudStatus('Niet gesynchroniseerd: '+(err.message||'controleer internet en instellingen')+'. Je wijzigingen staan in de lokale cache.');}
+      finally{cloudBusy=false;updateCloudUI();if(cloudDirty&&!cloudConflict&&cloudStatus==='Er zijn nieuwe wijzigingen om te bewaren.')queueCloudSync();}
+    }
+    async function beginCloudAccount(user){
+      if(!user?.id)throw Error('Kon account niet bepalen.');
+      cloudEpoch++;clearTimeout(cloudTimer);cloudBusy=false;
+      cloudUser=user;cloudMode=false;cloudConflict=false;cloudDirty=false;cloudRevision=0;
+      localBudget=safeLocalRead();
+      localStorage.setItem(MODE_KEY,'cloud');
+      document.body.classList.add('cloud-lock');
+      setAccountMessage('Online gegevens ophalen…');
+      $('accountSheet').classList.remove('hidden');
+      try{
+        const {data:row,error}=await sb.from('mijn_budget_data').select('payload,revision').eq('user_id',user.id).maybeSingle();
+        if(error)throw error;
+        if(!row){
+          setAccountPanel('onboardingPanel');
+          $('localCount').textContent=`Lokaal beschikbaar: ${localBudget.items.length} posten, ${localBudget.goals.length} spaardoelen en ${localBudget.payments.length} betaalregistraties.`;
+          setAccountMessage('Kies zelf of je je bestaande gegevens wilt kopiëren.');return;
+        }
+        const cached=getCloudCache(user.id);
+        if(cached?.dirty&&Array.isArray(cached.payload?.items)){
+          data=normalizeBudget(cached.payload);cloudRevision=Number(cached.revision)||0;cloudDirty=true;
+          cloudConflict=cloudRevision!==Number(row.revision);
+          cloudStatus=cloudConflict?'Het account is gewijzigd op een ander apparaat. Kies welke versie je wilt gebruiken.':'Eerdere lokale wijzigingen worden gesynchroniseerd.';
+        }else{
+          data=normalizeBudget(row.payload);cloudRevision=Number(row.revision)||0;cloudDirty=false;cloudStatus='Online account geladen';
+        }
+        cloudMode=true;cacheCloud();unlockAccount();
+        if(cloudDirty){if(cloudConflict)openAccount();else queueCloudSync();}
+      }catch(error){
+        const cached=getCloudCache(user.id);
+        if(cached&&Array.isArray(cached.payload?.items)){
+          data=normalizeBudget(cached.payload);cloudRevision=Number(cached.revision)||0;cloudDirty=!!cached.dirty;cloudMode=true;
+          cloudStatus='Online ophalen mislukt; offline kopie geopend. Wijzigingen moeten nog synchroniseren.';
+          unlockAccount();if(cloudDirty)queueCloudSync();
+        }else{setAccountPanel('authPanel');setAccountMessage('Online ophalen mislukt: '+(error.message||'onbekende fout')+'. Probeer het opnieuw.');}
+      }
+    }
+    async function createCloudBudget(copyLocal){
+      if(!cloudUser)return;
+      const payload=copyLocal?structuredClone(localBudget):emptyBudget();
+      if(copyLocal&&!confirm('Je lokale gegevens kopiëren naar dit nieuwe online account? De lokale versie blijft apart bewaard.'))return;
+      setAccountMessage('Eerste online budget aanmaken…');
+      const {error}=await sb.from('mijn_budget_data').insert({user_id:cloudUser.id,payload,revision:0});
+      if(error){setAccountMessage('Opslaan mislukt: '+error.message+'. Controleer of je SQL en RLS hebt ingesteld.');return;}
+      cloudMode=true;cloudDirty=false;cloudConflict=false;cloudRevision=0;data=normalizeBudget(payload);cloudStatus='Online budget aangemaakt';cacheCloud();unlockAccount();
+    }
+    async function setupCloudAccount(){
+      $('accountOpen').onclick=openAccount;
+      $('closeAccount').onclick=closeAccount;
+      $('stayLocal').onclick=()=>{if(cloudUser&&!cloudMode){sb?.auth.signOut();cloudUser=null;}if(document.body.classList.contains('cloud-lock'))document.body.classList.remove('cloud-lock');localStorage.setItem(MODE_KEY,'local');data=localBudget;closeAccount();updateCloudUI();render();};
+      $('cloudSetup').addEventListener('submit',async e=>{
+        e.preventDefault();const url=$('cloudUrl').value.trim().replace(/\/$/,''),key=$('cloudKey').value.trim();
+        if(!validCloudConfig(url,key)){setAccountMessage('Gebruik een HTTPS Project URL en uitsluitend de Supabase publishable of anon key. Geen secret/service-role key.');return;}
+        cloudConfig={url,key};localStorage.setItem(CONFIG_KEY,JSON.stringify(cloudConfig));sb=null;
+        try{await ensureSupabase();setAccountPanel('authPanel');setAccountMessage('Verbinding ingesteld. Je kunt nu registreren of inloggen.');}
+        catch(err){setAccountMessage(err.message||'Verbinding niet gelukt');}
+      });
+      $('changeCloudConfig').onclick=()=>{if(cloudMode){setAccountMessage('Log eerst uit voordat je de online projectinstellingen verandert.');return;}setAccountPanel('cloudSetup');setAccountMessage('Vul de instellingen van je eigen Supabase-project in.');};
+      $('authForm').addEventListener('submit',async e=>{
+        e.preventDefault();setAccountMessage('Inloggen…');
+        try{await ensureSupabase();const {data:result,error}=await sb.auth.signInWithPassword({email:$('authEmail').value.trim(),password:$('authPassword').value});if(error)throw error; $('authPassword').value='';await beginCloudAccount(result.user);}
+        catch(err){setAccountPanel('authPanel');setAccountMessage('Inloggen niet gelukt: '+(err.message||'controleer je gegevens'));}
+      });
+      $('signUp').onclick=async()=>{
+        if(!$('authForm').reportValidity())return;
+        setAccountMessage('Account aanvragen…');
+        try{await ensureSupabase();const {data:result,error}=await sb.auth.signUp({email:$('authEmail').value.trim(),password:$('authPassword').value,options:{emailRedirectTo:window.location.origin+window.location.pathname}});if(error)throw error;
+          $('authPassword').value='';localStorage.setItem(MODE_KEY,'cloud');
+          if(result.session&&result.user)await beginCloudAccount(result.user);
+          else setAccountMessage('Account aangevraagd. Controleer je e-mail en klik op de bevestigingslink. Log daarna in.');
+        }catch(err){setAccountMessage('Registreren niet gelukt: '+(err.message||'onbekende fout'));}
+      };
+      $('forgotPassword').onclick=async()=>{
+        const email=$('authEmail').value.trim();if(!email){setAccountMessage('Vul eerst je e-mailadres in.');return;}
+        try{await ensureSupabase();localStorage.setItem(MODE_KEY,'cloud');const {error}=await sb.auth.resetPasswordForEmail(email,{redirectTo:window.location.origin+window.location.pathname});if(error)throw error;setAccountMessage('Als dit e-mailadres een account heeft, ontvang je een e-mail om je wachtwoord te herstellen.');}
+        catch(err){setAccountMessage('Verzoek mislukt: '+(err.message||'onbekende fout'));}
+      };
+      $('recoveryForm').addEventListener('submit',async e=>{
+        e.preventDefault();try{const {error}=await sb.auth.updateUser({password:$('newPassword').value});if(error)throw error;recoveryPending=false;$('newPassword').value='';const {data:account}=await sb.auth.getUser();if(account?.user)await beginCloudAccount(account.user);else{setAccountPanel('authPanel');setAccountMessage('Wachtwoord gewijzigd. Je kunt nu inloggen.');}}
+        catch(err){setAccountMessage('Wijzigen mislukt: '+err.message);}
+      });
+      $('importLocal').onclick=()=>createCloudBudget(true);
+      $('startEmpty').onclick=()=>createCloudBudget(false);
+      $('syncNow').onclick=()=>{if(cloudBusy||!cloudMode)return;if(cloudDirty){cloudConflict=false;queueCloudSync();setCloudStatus('Synchronisatie wordt opnieuw geprobeerd…')}else if(cloudUser){beginCloudAccount(cloudUser)}};
+      $('signOut').onclick=async()=>{
+        if(cloudBusy){setAccountMessage('Wacht tot de synchronisatie klaar is.');return;}
+        if(cloudDirty&&!confirm('Je online wijzigingen zijn nog niet gesynchroniseerd. Ze blijven als concept op dit apparaat staan, maar staan nog niet op andere apparaten. Toch uitloggen?'))return;
+        clearTimeout(cloudTimer);cloudEpoch++;
+        const {error}=await sb.auth.signOut();if(error){setAccountMessage('Uitloggen mislukt: '+error.message);return;}
+        cloudUser=null;cloudMode=false;cloudDirty=false;cloudConflict=false;cloudRevision=0;data=safeLocalRead();localBudget=data;
+        localStorage.setItem(MODE_KEY,'local');cloudStatus='';unlockAccount();
+      };
+      $('loadRemote').onclick=async()=>{
+        if(!cloudUser||!cloudConflict)return;
+        if(!confirm('De online versie wordt geladen. Je niet-gesynchroniseerde wijzigingen op dit apparaat vervallen. Heb je een back-up gemaakt?'))return;
+        const {data:row,error}=await sb.from('mijn_budget_data').select('payload,revision').eq('user_id',cloudUser.id).single();
+        if(error){setAccountMessage('Ophalen mislukt: '+error.message);return;}
+        data=normalizeBudget(row.payload);cloudRevision=Number(row.revision)||0;cloudDirty=false;cloudConflict=false;cloudStatus='Online versie geladen';cacheCloud();unlockAccount();
+      };
+      $('keepDraft').onclick=async()=>{
+        if(!cloudUser||!cloudConflict)return;
+        if(!confirm('Je huidige concept vervangt de nieuwere online versie. Wijzigingen op een ander apparaat kunnen hierdoor verloren gaan. Doorgaan?'))return;
+        const {data:row,error}=await sb.from('mijn_budget_data').select('revision').eq('user_id',cloudUser.id).single();
+        if(error){setAccountMessage('Kan revisie niet ophalen: '+error.message);return;}
+        cloudRevision=Number(row.revision)||0;cloudConflict=false;cloudDirty=true;cacheCloud();queueCloudSync();closeAccount();
+      };
+      $('accountSheet').addEventListener('click',e=>{if(e.target===$('accountSheet'))closeAccount()});
+      updateCloudUI();
+      if(localStorage.getItem(MODE_KEY)!=='cloud'||!cloudConfig.url||!cloudConfig.key)return;
+      lockAccount('Account laden…');
+      try{
+        await ensureSupabase();
+        const {data:sessionData,error}=await sb.auth.getSession();if(error)throw error;
+        if(!sessionData.session){setAccountPanel('authPanel');setAccountMessage('Log opnieuw in om je online budget te openen.');return;}
+        const {data:account,error:userError}=await sb.auth.getUser();if(userError)throw userError;
+        if(recoveryPending){cloudUser=account.user;setAccountPanel('recoveryForm');setAccountMessage('Kies je nieuwe wachtwoord.');return;}
+        await beginCloudAccount(account.user);
+      }catch(err){setAccountPanel('authPanel');setAccountMessage('Online verbinding mislukt: '+(err.message||'onbekende fout')+'. Je kunt ook lokaal verdergaan.');}
+    }
+
+    window.addEventListener('keydown',e=>{if(e.key==='Escape'){closeEntry();closeGoal();closeSaving();$('settingsSheet').classList.add('hidden');if(!document.body.classList.contains('cloud-lock'))closeAccount();}});
     render();
+    setupCloudAccount();
   </script>
 </body>
 </html>
