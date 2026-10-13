@@ -1,0 +1,73 @@
+MIJN BUDGET — INSTALLEERBARE TELEFOONAPP (PWA)
+================================================
+
+WAT IS DIT?
+De bestaande versie 6.0, met dezelfde budget- en accountfuncties,
+plus een icoontje op het startscherm en beperkte offline ondersteuning.
+Er is geen App Store of Google Play nodig. De website blijft werken.
+
+BELANGRIJK: BESTAANDE GEGEVENS
+1. Maak eerst vanuit je huidige Mijn Budget een back-up via het tandwieltje.
+2. Gebruik EXACT dezelfde GitHub Pages-website als nu.
+3. De lokale opslagsleutel blijft 'mijn-budget-v1'. Je huidige database blijft ongewijzigd.
+4. Een geïnstalleerde telefoonapp kan een andere opslagruimte hebben dan
+   de gewone browser (vooral op iOS). Log in op je bestaande Supabase-account
+   voor online gegevens. Mogelijk moet je de Supabase Project URL en
+   publishable key nogmaals invullen. Controleer eerst alle bedragen.
+5. Verwijder je oude app of browsergegevens pas nadat je back-up in orde is.
+
+ZO PLAATS JE DEZE VERSIE OP GITHUB (ZONDER PROGRAMMEREN)
+1. Pak de ZIP uit (niet als ZIP naar GitHub uploaden).
+2. Open je BESTAANDE repository 'mijn-budget' op github.com.
+3. Kies Add file > Upload files.
+4. Selecteer tegelijk alle volgende bestanden in de UITGEPAKTE hoofdmap:
+   index.html
+   manifest.webmanifest
+   service-worker.js
+   icon-192.png
+   icon-512.png
+   icon-maskable-512.png
+   apple-touch-icon.png
+   favicon-32.png
+   (UITLEG.txt is optioneel.)
+5. Upload ze in de hoofdmap, naast elkaar, NIET in een extra submap.
+   De nieuwe index.html vervangt de oude.
+6. Klik Commit changes. GitHub Pages moet nog altijd op main / (root) staan.
+7. Open je BESTAANDE https://jouwnaam.github.io/mijn-budget/ adres en
+   verfris de pagina na publicatie.
+
+INSTALLEREN OP IPHONE
+- Open je bestaande app-link met Safari.
+- Tik op de deelknop (vierkant met pijl).
+- Kies Zet op beginscherm / Voeg toe aan beginscherm.
+- Als zichtbaar: zet 'Open als webapp' aan en kies Voeg toe.
+- Open Mijn Budget via het nieuwe icoon; log indien nodig opnieuw in.
+
+INSTALLEREN OP ANDROID
+- Open de app-link in Chrome.
+- Tik op het menu met drie puntjes (⋮).
+- Kies 'App installeren' of 'Toevoegen aan startscherm'.
+- Tik op Installeren/Toevoegen.
+- Open via het icoon op je startscherm.
+
+INSTALLEREN VIA DE APP ZELF
+- Ga naar Instellingen (tandwiel) > Mijn Budget op telefoon installeren.
+- Chrome kan direct de installatievraag openen.
+- Op iPhone verschijnen de handmatige Safari-stappen.
+
+OFFLINE EN ACCOUNT
+- Het basisscherm kan offline openen dankzij de service-worker.
+- Voor inloggen, cloud synchronisatie en het ophalen van Supabase JS
+  is internet nodig. Offline gemaakte cloudwijzigingen synchroniseren
+  niet direct: controleer expliciet de status zodra je weer online bent.
+- 'Nog vrij' is een budgetberekening, geen bankstand.
+- De bestanden in GitHub bevatten GEEN persoonlijke financiële gegevens,
+  databasewachtwoorden of geheime Supabase-sleutels.
+
+PROBLEMEN
+- Geen installeeroptie? Controleer HTTPS, alle 8 bestanden,
+  vernieuw de pagina en open hem in Safari/Chrome (niet GitHub preview).
+- Wit scherm na installatie? Controleer dat manifest en service-worker.js
+  dezelfde map hebben als index.html en dat alle bestanden aanwezig zijn.
+- Offline opent de app wel maar kan niet synchroniseren: dit is normaal.
+- Bij cacheproblemen: sluit de app en open de GitHub Pages-link online.
