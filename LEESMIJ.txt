@@ -1,66 +1,39 @@
-MIJN BUDGET 7.0 — CATEGORIEËN EN WEEKBUDGETTEN
-==============================================
+MIJN BUDGET 7.1 — CATEGORIEËN VERWIJDEREN EN VERBERGEN
+======================================================
 
-Wat is er nieuw?
-- Een extra tabblad 'Budget' in dezelfde donkerpaarse telefoonapp.
-- Maandbudgetten per categorie: o.a. Boodschappen, Vervoer, Eten & drinken,
-  Winkelen, Vrije tijd, Gezondheid en Overig.
-- Zelf categorieën toevoegen, bijv. Huisdieren.
-- Bij een uitgave een categorie kiezen, of bestaande uitgaven bijwerken.
-- Een automatisch weekrichtbedrag en een uitklapbaar overzicht van alle
-  weken in de gekozen maand.
-- Budgetlimieten per maand aanpassen: 'alleen deze maand' of 'vanaf deze maand'.
+NIEUW
+- Open Budget > Categorieën beheren of verwijderen.
+- Eigen categorieën: definitief verwijderen met bevestiging.
+- Standaardcategorieën: verbergen of later weer tonen.
+- 'Overig' blijft altijd zichtbaar zodat alle uitgaven meetellen.
+- Bij verwijderen van een eigen categorie worden bestaande uitgaven
+  naar 'Overig' verplaatst, zonder bedragen te verwijderen.
+- Bij verbergen van een standaardcategorie blijven de oorspronkelijke
+  categorieën op uitgaven bewaard; zolang deze verborgen is, verschijnen
+  die uitgaven onder 'Overig'. Na terugzetten verschijnt hun categorie weer.
+- Budgetlimieten van een verwijderde eigen categorie worden gewist.
+  Limieten van verborgen standaardcategorieën blijven bestaan en komen
+  terug als je de categorie weer zichtbaar maakt.
 
-LET OP: Het weekbedrag is een schatting, geen banksaldo of garantie dat je
-het bedrag kunt uitgeven. Je maandinkomen kan ook nog niet ontvangen zijn.
-De app trekt vaste lasten, uitgaven en spaargeld mee in de berekening.
-Een categorielimiet wordt niet nogmaals afgetrokken. Bestaande uitgaven
-zonder categorie vallen onder 'Overig' totdat je ze zelf verandert.
+UPDATE VIA GITHUB PAGES
+1. Open de huidige app, laat synchronisatie voltooien, maak een back-up
+   onder Instellingen voordat je gaat updaten.
+2. Pak dit ZIP-pakket uit.
+3. Open de bestaande GitHub-repository 'mijn-budget'.
+4. Upload alle bestanden uit het pakket naar de HOOFDMAP via
+   Add file > Upload files en bevestig dat bestanden worden vervangen.
+5. Klik Commit changes. Open de bestaande app na publicatie opnieuw.
+   Sluit de geinstalleerde telefoonapp desnoods helemaal en heropen.
+6. Tik op Budget > Categorieën beheren of verwijderen.
 
-INSTALLEREN VIA GITHUB PAGES
-===========================
-1. Maak eerst in je HUIDIGE Mijn Budget onder Instellingen (tandwiel)
-   een back-up. Gebruik je een account, controleer of de laatste
-   wijzigingen zijn gesynchroniseerd.
-2. Open je bestaande GitHub-repository 'mijn-budget'. Maak geen nieuwe.
-3. Kies 'Add file' > 'Upload files' in de hoofdmap van de repository.
-4. Upload de bestanden uit dit pakket (zonder extra submap). Minimaal zijn
-   index.html, service-worker.js en manifest.webmanifest veranderd; de
-   icoonbestanden zijn hetzelfde als in je vorige telefoonapp.
-5. Klik op 'Commit changes'. Wacht tot GitHub Pages klaar is.
-6. Open je bestaande GitHub Pages-link. Sluit de geïnstalleerde telefoonapp
-   zo nodig helemaal en open hem opnieuw om de nieuwste versie te laden.
-7. Tik onderaan op 'Budget'.
+De lokale opslagsleutel, Supabase-authenticatie en -database blijven gelijk.
+Online synchronisatie en herstel van oudere back-ups blijven ondersteund.
+Je hoeft niets aan de database of aan je bestaande GitHub-URL te wijzigen.
 
 TEST
-====
-- Stel 'Boodschappen' in op 400 euro vanaf de huidige maand.
-- Voeg een uitgave van 25 euro toe en kies categorie 'Boodschappen'.
-- Check of je nog 375 euro categorie-budget over hebt.
-- Ga naar de volgende maand en pas de limiet voor die maand aan.
-- Ga terug: het oorspronkelijke bedrag moet er nog staan.
-- Kijk onder 'Budget' naar je weekrichtbedrag en 'Bekijk alle weken'.
-- Herstart de app. De gegevens moeten bewaard blijven.
-- Heb je online opslag ingesteld? Probeer de synchronisatie dan op
-  een tweede apparaat of in een tweede browser.
-
-BEHOUD VAN GEGEVENS EN ACCOUNTS
-==============================
-- De bestaande lokale opslagsleutel blijft 'mijn-budget-v1'.
-- De Supabase-configuratie en opslag blijven ongewijzigd. Geen nieuwe
-  database-tabellen of SQL-stappen nodig. Nieuwe velden staan in dezelfde
-  JSON-payload als je oude budgetgegevens.
-- Alle bestaande inkomsten, vaste lasten, uitgaven, spaardoelen en
-  rekeningen blijven behouden.
-- Back-ups van oudere versies kunnen worden ingelezen. Nieuwe back-ups
-  bevatten ook je categorie-budgetten en eigen categorieën.
-- Maak een back-up vóór elke update. Bij geïnstalleerde telefoonapps kan
-  de browsersessie anders zijn; gebruik je Supabase-account om data te
-  synchroniseren en ga niet uit van gedeelde lokale opslag.
-
-BELANGRIJK
-==========
-Deze app is geen bankkoppeling en is nog een persoonlijke testversie.
-De nieuwe velden en de oude begrotingsberekening zijn lokaal met
-voorbeeldgegevens getest. Echte Supabase-synchronisatie en installatie op
-jouw toestel moeten na upload opnieuw door jou worden gecontroleerd.
+- Maak categorie 'Hobby', voeg daarin een uitgave van 12 euro toe.
+- Verwijder 'Hobby' via 'Categorieën beheren of verwijderen'.
+- Controleer dat de uitgave nog bestaat en onder 'Overig' staat.
+- Verberg een standaardcategorie en toon die daarna weer.
+- Controleer dat maandtotalen, weekbudget en spaardoelen gelijk blijven.
+- Test op een tweede apparaat of online synchronisatie correct gebeurt.

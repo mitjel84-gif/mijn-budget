@@ -13,7 +13,7 @@
   <meta name="apple-mobile-web-app-title" content="Mijn Budget">
 
   <meta name="description" content="Mijn Budget: een eenvoudige donkerpaarse budgetapp met maandoverzicht, inkomsten, vaste lasten, rekeningen, uitgaven en spaardoelen.">
-  <title>Mijn Budget 7.0 — telefoonapp</title>
+  <title>Mijn Budget 7.1 — telefoonapp</title>
   <style>
     :root { color-scheme:dark; --bg:#100d1b; --panel:#201a30; --panel2:#29213c; --border:#403351; --text:#f8f5ff; --muted:#b5aac9; --purple:#b17aff; --purple2:#8e58ea; --green:#74e2a8; --red:#ff9aa8; }
     * { box-sizing:border-box }
@@ -241,6 +241,13 @@
     .category-card.over .progress>span {background:linear-gradient(90deg,#e27087,#ff9dac)}
     .category-card.over .category-footer {color:#ffb5c4}
     .category-actions {display:flex;gap:7px;align-items:center;flex-shrink:0}
+    .manage-row {display:flex;align-items:center;justify-content:space-between;gap:12px;border-bottom:1px solid #453554;padding:12px 0}
+    .manage-row:last-child {border-bottom:0}
+    .manage-row span {min-width:0;overflow-wrap:anywhere}
+    .manage-row button {min-width:100px;flex-shrink:0;padding:10px;border:1px solid #76569a;background:#36264e;color:#f1dfff;border-radius:11px;font-size:13px;font-weight:700}
+    .manage-row button.danger-small {border-color:#975270;background:#402338;color:#ffb9ca}
+    .manage-heading {font-size:14px;font-weight:750;color:#e8ccff;margin-top:17px}
+    .manage-hint {font-size:12px;color:#beadcd;margin-top:5px}
     .small-pencil {padding:9px 11px;border:1px solid #6b4e88;border-radius:12px;background:#3a294f;color:#e3c2ff;font-size:12px;font-weight:750;min-height:41px}
     .budget-hero {border-color:#8562b4;background:linear-gradient(130deg,#55317e,#312047 62%,#251c35)}
     .budget-hero .big {font-size:clamp(31px,8vw,40px)}
@@ -324,6 +331,15 @@
       <label class="field">Naam van categorie<input id="customCategoryName" required maxlength="35" placeholder="Bijv. Huisdieren"></label>
       <div class="buttons"><button class="secondary" type="button" id="cancelCustomCategory">Annuleren</button><button class="primary" type="submit">Toevoegen</button></div>
     </form>
+  </div>
+  <div class="sheet hidden" id="manageCategoriesSheet" role="dialog" aria-modal="true" aria-labelledby="manageCategoriesTitle">
+    <div class="dialog">
+      <h2 id="manageCategoriesTitle">Categorieën beheren</h2>
+      <p class="subtitle">Verwijder eigen categorieën of verberg standaardcategorieën die je niet gebruikt.</p>
+      <div id="manageCategoriesList"></div>
+      <p class="tip">Uitgaven blijven altijd bestaan. Bij een verwijderde of verborgen categorie tellen ze mee onder ‘Overig’. Een verborgen standaardcategorie kun je later weer tonen.</p>
+      <button class="primary" type="button" id="closeManageCategories" style="width:100%">Gereed</button>
+    </div>
   </div>
   <div class="sheet hidden" id="goalSheet" role="dialog" aria-modal="true" aria-labelledby="goalFormTitle">
     <form class="dialog" id="goalForm">
@@ -438,14 +454,15 @@
       {id:'gezondheid',name:'Gezondheid',icon:'💊'},
       {id:'overig',name:'Overig',icon:'📦'}
     ];
-    const emptyBudget=()=>({items:[],goals:[],payments:[],categoryBudgets:{},customCategories:[]});
+    const emptyBudget=()=>({items:[],goals:[],payments:[],categoryBudgets:{},customCategories:[],hiddenCategories:[]});
     const normalizeBudget=raw=>raw&&Array.isArray(raw.items)?{
       ...raw,items:raw.items,goals:Array.isArray(raw.goals)?raw.goals:[],payments:Array.isArray(raw.payments)?raw.payments:[],
       categoryBudgets:raw.categoryBudgets&&typeof raw.categoryBudgets==='object'&&!Array.isArray(raw.categoryBudgets)?raw.categoryBudgets:{},
-      customCategories:Array.isArray(raw.customCategories)?raw.customCategories:[]
+      customCategories:Array.isArray(raw.customCategories)?raw.customCategories:[],
+      hiddenCategories:Array.isArray(raw.hiddenCategories)?[...new Set(raw.hiddenCategories.filter(id=>typeof id==='string'&&id!=='overig'&&CATEGORY_DEFAULTS.some(c=>c.id===id)))]:[]
     }:emptyBudget();
     // Bestaande bedragen en Supabase JSON-payload blijven ongewijzigd bruikbaar.
-    const categories=()=>[...CATEGORY_DEFAULTS,...data.customCategories.filter(x=>x&&typeof x.id==='string'&&typeof x.name==='string')];
+    const categories=()=>[...CATEGORY_DEFAULTS.filter(c=>!data.hiddenCategories.includes(c.id)),...data.customCategories.filter(x=>x&&typeof x.id==='string'&&typeof x.name==='string')];
     const categoryFor=id=>categories().find(c=>c.id===id)||CATEGORY_DEFAULTS.find(c=>c.id==='overig');
     const categoryIdOf=item=>categories().some(c=>c.id===item.categoryId)?item.categoryId:'overig';
     function categoryLimit(id,k=selectedMonth()){
@@ -713,6 +730,7 @@
         <div class="section-title"><h2>Budget per categorie</h2><span class="pill">${html(getLabel(k))}</span></div>
         ${categoryCards}
         <button class="add" data-custom-category>＋ Eigen categorie toevoegen</button>
+        <button class="secondary" style="width:100%;margin-top:10px" type="button" data-manage-categories>⚙ Categorieën beheren of verwijderen</button>
         <p class="tip">Een categorielimiet is een richtlijn. De app trekt die <strong>niet opnieuw af</strong> van je beschikbare geld. Oudere uitgaven zonder categorie vallen onder ‘Overig’. Via ✎ kun je ze indelen.</p>`;
     }
     let editingCategory=null;
@@ -749,11 +767,54 @@
     $('customCategorySheet').addEventListener('click',e=>{if(e.target===$('customCategorySheet'))$('customCategorySheet').classList.add('hidden');});
     $('customCategoryForm').addEventListener('submit',e=>{
       e.preventDefault();const name=$('customCategoryName').value.trim();if(!name)return;
-      if(categories().some(c=>c.name.toLowerCase()===name.toLowerCase())){alert('Deze categorie bestaat al.');return;}
+      if([...CATEGORY_DEFAULTS,...data.customCategories].some(c=>c.name.toLowerCase()===name.toLowerCase())){alert('Deze categorie bestaat al.');return;}
       if(data.customCategories.length>=30){alert('Je kunt maximaal 30 extra categorieën maken.');return;}
       data.customCategories.push({id:'eigen-'+getId(),name,icon:'🏷️'});
       if(!persist())return;
       $('customCategorySheet').classList.add('hidden');$('customCategoryName').value='';render();
+    });
+    // Categorieën beheren: originele uitgaven en bedragen gaan nooit verloren.
+    function renderManageCategories(){
+      const standard=CATEGORY_DEFAULTS.filter(c=>c.id!=='overig').map(c=>{
+        const hidden=data.hiddenCategories.includes(c.id);
+        return `<div class="manage-row"><span>${html(c.icon)} <strong>${html(c.name)}</strong>${hidden?' <small>(verborgen)</small>':''}</span><button type="button" data-toggle-standard="${html(c.id)}">${hidden?'Weer tonen':'Verbergen'}</button></div>`;
+      }).join('');
+      const custom=data.customCategories.map(c=>`<div class="manage-row"><span>${html(c.icon||'🏷️')} <strong>${html(c.name)}</strong></span><button type="button" class="danger-small" data-delete-custom="${html(c.id)}">Verwijderen</button></div>`).join('');
+      $('manageCategoriesList').innerHTML=`<div class="manage-heading">Standaardcategorieën</div><div class="manage-hint">Overig blijft altijd zichtbaar.</div>${standard}<div class="manage-heading">Jouw eigen categorieën</div>${custom||'<p class="meta">Nog geen eigen categorieën toegevoegd.</p>'}`;
+    }
+    function openManageCategories(){renderManageCategories();$('manageCategoriesSheet').classList.remove('hidden');}
+    function closeManageCategories(){$('manageCategoriesSheet').classList.add('hidden');}
+    $('closeManageCategories').onclick=closeManageCategories;
+    $('manageCategoriesSheet').addEventListener('click',e=>{if(e.target===$('manageCategoriesSheet'))closeManageCategories();});
+    $('manageCategoriesList').addEventListener('click',e=>{
+      const b=e.target.closest('button');if(!b)return;
+      const standardId=b.dataset.toggleStandard;
+      if(standardId){
+        const c=CATEGORY_DEFAULTS.find(x=>x.id===standardId&&x.id!=='overig');if(!c)return;
+        const hidden=data.hiddenCategories.includes(standardId);
+        if(!hidden&&!confirm(`Categorie '${c.name}' verbergen? Bestaande uitgaven blijven bewaard en tellen voorlopig mee onder Overig.`))return;
+        const old=data.hiddenCategories.slice();
+        data.hiddenCategories=hidden?old.filter(id=>id!==standardId):[...old,standardId];
+        if(!persist()){data.hiddenCategories=old;return;}
+        renderManageCategories();render();return;
+      }
+      const customId=b.dataset.deleteCustom;
+      if(customId){
+        const c=data.customCategories.find(x=>x.id===customId);if(!c)return;
+        const count=data.items.filter(i=>i.type==='expenses'&&i.categoryId===customId).length;
+        if(!confirm(`Categorie '${c.name}' definitief verwijderen?${count?` ${count} uitgave(n) worden onder Overig geplaatst.`:''} De bedragen blijven behouden, maar de categorielimieten worden verwijderd.`))return;
+        const oldCats=data.customCategories.slice(),oldBudgets=structuredClone(data.categoryBudgets);
+        const reassigned=[];
+        for(const i of data.items){if(i.type==='expenses'&&i.categoryId===customId){reassigned.push(i);i.categoryId='overig';}}
+        data.customCategories=data.customCategories.filter(x=>x.id!==customId);
+        delete data.categoryBudgets[customId];
+        if(!persist()){
+          data.customCategories=oldCats;data.categoryBudgets=oldBudgets;
+          for(const i of reassigned)i.categoryId=customId;
+          return;
+        }
+        renderManageCategories();render();
+      }
     });
     function openEntry(type,id){
       editingId=id||null;editingType=type;
@@ -899,6 +960,7 @@
       if(button.dataset.savingEdit)openSaving(button.dataset.savingEdit,button.dataset.entry);
       if(button.dataset.budgetEdit)openBudget(button.dataset.budgetEdit);
       if(button.hasAttribute('data-custom-category')){$('customCategorySheet').classList.remove('hidden');$('customCategoryName').focus();}
+      if(button.hasAttribute('data-manage-categories'))openManageCategories();
       if(button.dataset.add)openEntry(button.dataset.add);
       if(button.dataset.edit){const item=data.items.find(i=>i.id===button.dataset.edit);if(item)openEntry(item.type,item.id);}
     });
@@ -921,7 +983,7 @@
     $('closeSettings').onclick=()=>{$('settingsSheet').classList.add('hidden');};
     $('settingsSheet').addEventListener('click',e=>{if(e.target===$('settingsSheet'))$('settingsSheet').classList.add('hidden');});
     $('downloadBackup').onclick=()=>{
-      const text=JSON.stringify({format:'mijn-budget-backup',version:7,exportedAt:new Date().toISOString(),items:data.items,goals:data.goals,payments:data.payments,categoryBudgets:data.categoryBudgets,customCategories:data.customCategories},null,2);
+      const text=JSON.stringify({format:'mijn-budget-backup',version:7.1,exportedAt:new Date().toISOString(),items:data.items,goals:data.goals,payments:data.payments,categoryBudgets:data.categoryBudgets,customCategories:data.customCategories,hiddenCategories:data.hiddenCategories},null,2);
       const url=URL.createObjectURL(new Blob([text],{type:'application/json'}));
       const a=document.createElement('a');a.href=url;a.download=`mijn-budget-backup-${dateLocal(new Date())}.json`;document.body.append(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),1000);
     };
@@ -934,6 +996,7 @@
         if(!backup||!Array.isArray(backup.items)||backup.items.length>20000|| (backup.goals!==undefined&&!Array.isArray(backup.goals)) || (backup.payments!==undefined&&!Array.isArray(backup.payments)))throw Error('Dit is geen geldige back-up.');
         if((backup.goals||[]).length>3000)throw Error('Te veel spaardoelen in back-up.');
         if(backup.customCategories!==undefined&&(!Array.isArray(backup.customCategories)||backup.customCategories.length>30))throw Error('Ongeldige eigen categorieën in back-up.');
+        if(backup.hiddenCategories!==undefined&&(!Array.isArray(backup.hiddenCategories)||backup.hiddenCategories.length>6||backup.hiddenCategories.some(id=>typeof id!=='string'||id==='overig'||!CATEGORY_DEFAULTS.some(c=>c.id===id))))throw Error('Ongeldige verborgen categorieën in back-up.');
         for(const c of (backup.customCategories||[]))if(!c||typeof c.id!=='string'||c.id.length>80||typeof c.name!=='string'||!c.name.trim()||c.name.length>35||typeof c.icon!=='string'||c.icon.length>16)throw Error('Ongeldige categorie in back-up.');
         if(backup.categoryBudgets!==undefined){
           if(!backup.categoryBudgets||typeof backup.categoryBudgets!=='object'||Array.isArray(backup.categoryBudgets)||Object.keys(backup.categoryBudgets).length>40)throw Error('Ongeldige budgetten in back-up.');
@@ -956,7 +1019,7 @@
           if(item.dueDay!==undefined&&item.dueDay!==null&&(!Number.isInteger(Number(item.dueDay))||Number(item.dueDay)<1||Number(item.dueDay)>31))throw Error('Ongeldige betaaldag in de back-up.');
         }
         if(!confirm('Hiermee vervang je alle huidige gegevens in deze browser door de gegevens uit de back-up. Doorgaan?'))return;
-        const previous=data;data=normalizeBudget({items:backup.items,goals:backup.goals||[],payments:backup.payments||[],categoryBudgets:backup.categoryBudgets||{},customCategories:backup.customCategories||[]});
+        const previous=data;data=normalizeBudget({items:backup.items,goals:backup.goals||[],payments:backup.payments||[],categoryBudgets:backup.categoryBudgets||{},customCategories:backup.customCategories||[],hiddenCategories:backup.hiddenCategories||[]});
         if(!persist()){data=previous;return;}
         $('settingsSheet').classList.add('hidden');render();alert('Back-up hersteld.');
       }catch(error){alert(`Back-up herstellen mislukt: ${error.message}`);}
@@ -1149,7 +1212,7 @@
       }catch(err){setAccountPanel('authPanel');setAccountMessage('Online verbinding mislukt: '+(err.message||'onbekende fout')+'. Je kunt ook lokaal verdergaan.');}
     }
 
-    window.addEventListener('keydown',e=>{if(e.key==='Escape'){closeEntry();closeGoal();closeSaving();closeBudget();$('customCategorySheet').classList.add('hidden');$('settingsSheet').classList.add('hidden');if(!document.body.classList.contains('cloud-lock'))closeAccount();}});
+    window.addEventListener('keydown',e=>{if(e.key==='Escape'){closeEntry();closeGoal();closeSaving();closeBudget();$('customCategorySheet').classList.add('hidden');closeManageCategories();$('settingsSheet').classList.add('hidden');if(!document.body.classList.contains('cloud-lock'))closeAccount();}});
     render();
     setupCloudAccount();
   </script>
