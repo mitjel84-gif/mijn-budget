@@ -2,7 +2,7 @@
   "id": "./",
   "name": "Mijn Budget",
   "short_name": "Mijn Budget",
-  "description": "Je persoonlijke budget, vaste lasten, uitgaven en spaardoelen in één overzicht.",
+  "description": "Je persoonlijke budget, vaste lasten, uitgaven, weekbudgetten, categorieën en spaardoelen in één overzicht.",
   "lang": "nl-NL",
   "start_url": "./",
   "scope": "./",
